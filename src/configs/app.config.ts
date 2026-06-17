@@ -8,12 +8,12 @@ export type AppConfig = {
 }
 
 const appConfig: AppConfig = {
-    apiPrefix: '/api',
-    authenticatedEntryPath: '/dashboards/ecommerce',
+    apiPrefix: 'https://localhost:7288/',
+    authenticatedEntryPath: '/home',
     unAuthenticatedEntryPath: '/sign-in',
-    locale: 'en',
     accessTokenPersistStrategy: 'localStorage',
-    enableMock: true,
+    locale: 'fa', // تنظیم زبان پیش‌فرض روی فارسی
+    enableMock: false, // 🚀 بسیار مهم: غیرفعال کردن دیتای ساختگی
 }
 
 export default appConfig

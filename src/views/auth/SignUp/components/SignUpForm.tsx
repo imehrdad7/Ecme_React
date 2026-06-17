@@ -15,16 +15,16 @@ interface SignUpFormProps extends CommonProps {
 }
 
 type SignUpFormSchema = {
-    userName: string
+    fullname: string
     password: string
-    email: string
+    phonenumber: string
     confirmPassword: string
 }
 
 const validationSchema: ZodType<SignUpFormSchema> = z
     .object({
-        email: z.string({ required_error: 'لطفاً ایمیل خود را وارد کنید' }),
-        userName: z.string({ required_error: 'لطفاً نام خود را وارد کنید' }),
+        phonenumber: z.string({ required_error: 'لطفاً شماره موبایل خود را وارد کنید' }),
+        fullname: z.string({ required_error: 'لطفاً نام و نام خانوادگی خود را وارد کنید' }),
         password: z.string({ required_error: 'رمز عبور الزامی است' }),
         confirmPassword: z.string({
             required_error: 'تأیید رمز عبور الزامی است',
@@ -51,11 +51,11 @@ const SignUpForm = (props: SignUpFormProps) => {
     })
 
     const onSignUp = async (values: SignUpFormSchema) => {
-        const { userName, password, email } = values
+        const {phonenumber, fullname, password } = values
 
         if (!disableSubmit) {
             setSubmitting(true)
-            const result = await signUp({ userName, password, email })
+            const result = await signUp({ phonenumber, fullname, password })
 
             if (result?.status === 'failed') {
                 setMessage?.(result.message)
@@ -69,41 +69,42 @@ const SignUpForm = (props: SignUpFormProps) => {
         <div className={className}>
             <Form onSubmit={handleSubmit(onSignUp)}>
                 <FormItem
-                    label="نام کاربری"
-                    invalid={Boolean(errors.userName)}
-                    errorMessage={errors.userName?.message}
+                    label="شماره موبایل"
+                    invalid={Boolean(errors.fullname)}
+                    errorMessage={errors.fullname?.message}
                 >
                     <Controller
-                        name="userName"
+                        name="phonenumber"
                         control={control}
                         render={({ field }) => (
                             <Input
                                 type="text"
-                                placeholder="نام کاربری"
+                                placeholder="شماره موبایل همان نام کاربری است"
                                 autoComplete="off"
                                 {...field}
                             />
                         )}
                     />
                 </FormItem>
-                <FormItem
-                    label="ایمیل"
-                    invalid={Boolean(errors.email)}
-                    errorMessage={errors.email?.message}
+                
+                { <FormItem
+                    label="نام و نام خانوادگی"
+                    invalid={Boolean(errors.fullname)}
+                    errorMessage={errors.fullname?.message}
                 >
                     <Controller
-                        name="email"
+                        name="fullname"
                         control={control}
                         render={({ field }) => (
                             <Input
-                                type="email"
-                                placeholder="ایمیل"
+                                type="text"
+                                placeholder="نام و نام خانوادگی خود را وارد کنید"
                                 autoComplete="off"
                                 {...field}
                             />
                         )}
                     />
-                </FormItem>
+                </FormItem> }
                 <FormItem
                     label="رمز عبور"
                     invalid={Boolean(errors.password)}
@@ -116,7 +117,7 @@ const SignUpForm = (props: SignUpFormProps) => {
                             <Input
                                 type="password"
                                 autoComplete="off"
-                                placeholder="رمز عبور"
+                                placeholder="رمز عبور خود را وارد کنید"
                                 {...field}
                             />
                         )}
@@ -134,7 +135,7 @@ const SignUpForm = (props: SignUpFormProps) => {
                             <Input
                                 type="password"
                                 autoComplete="off"
-                                placeholder="تأیید رمز عبور"
+                                placeholder="تأیید رمز عبور خود را وارد کنید"
                                 {...field}
                             />
                         )}
