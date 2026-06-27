@@ -12,7 +12,6 @@ const LayoutBase = (props: LayoutBaseProps) => {
         type,
         pageContainerReassemble,
     } = props
-
     return (
         <LayoutContext.Provider
             value={{ adaptiveCardActive, pageContainerReassemble, type }}

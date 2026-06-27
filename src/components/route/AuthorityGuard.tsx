@@ -1,18 +1,29 @@
-import { PropsWithChildren } from 'react'
-import { Navigate } from 'react-router-dom'
-import useAuthority from '@/utils/hooks/useAuthority'
+import { Navigate, useLocation } from 'react-router-dom'
+import { useAuth } from '@/auth' 
 
-type AuthorityGuardProps = PropsWithChildren<{
-    userAuthority?: string[]
-    authority?: string[]
-}>
+const AuthorityGuard = ({ children }: { children: React.ReactNode }) => {
+    const { authenticated, user } = useAuth()
+    const location = useLocation()
 
-const AuthorityGuard = (props: AuthorityGuardProps) => {
-    const { userAuthority = [], authority = [], children } = props
+    if (!authenticated) {
+        return <Navigate to="/sign-in" replace />
+    }
 
-    const roleMatched = useAuthority(userAuthority, authority)
+    // بررسی ایمن‌تر: اول چک می‌کنیم user وجود دارد، بعد آیدی را بررسی می‌کنیم
+    const hasCompany = Boolean(
+        user?.companyId && 
+        user.companyId !== '00000000-0000-0000-0000-000000000000'
+    ); 
+    
+    // اینجا از includes استفاده کردیم تا اگر کاربر در هر زیرمجموعه‌ای از تنظیمات بود، گیر نکند
+    const isAlreadyOnSettingsPage = location.pathname.includes('/concepts/account/settings');
 
-    return <>{roleMatched ? children : <Navigate to="/access-denied" />}</>
+    if (!hasCompany && !isAlreadyOnSettingsPage) {
+        // 👈 تغییر مهم: اضافه کردن /company به انتهای مسیر
+        return <Navigate to="/concepts/account/settings?tab=companySetting" replace />
+    }
+
+    return <>{children}</>
 }
 
 export default AuthorityGuard

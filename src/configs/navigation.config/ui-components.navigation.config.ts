@@ -12,7 +12,7 @@ const uiComponentNavigationConfig: NavigationTree[] = [
         key: 'uiComponent',
         path: '',
         title: 'کامپوننت‌های UI',
-        translateKey: 'nav.uiComponents',
+        translateKey: '',
         icon: 'uiComponents',
         type: NAV_ITEM_TYPE_TITLE,
         authority: [ADMIN, USER],

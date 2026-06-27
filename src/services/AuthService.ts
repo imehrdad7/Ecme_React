@@ -7,6 +7,8 @@ import type {
     ResetPassword,
     SignInResponse,
     SignUpResponse,
+    User,
+
 } from '@/@types/auth'
 
 export async function apiSignIn(data: SignInCredential) {
@@ -47,3 +49,20 @@ export async function apiResetPassword<T>(data: ResetPassword) {
         data,
     })
 }
+
+export async function apiGetUserProfile(phoneNumber: string) {
+        return ApiService.fetchDataWithAxios<User>({
+            url: `/api/v1/Users/PhoneNumber/${phoneNumber}`,
+            method: 'get',
+    })
+}
+
+export async function apiUpdateUserProfile(id: string, data: FormData) {   
+    return ApiService.fetchDataWithAxios({
+        url: `/api/v1/Companies`,
+        method: 'put',
+        data
+    })
+}
+
+

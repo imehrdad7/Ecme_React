@@ -5,9 +5,15 @@ import { AuthProvider } from '@/auth'
 import Views from '@/views'
 import appConfig from './configs/app.config'
 import './locales'
+import VConsole from 'vconsole'
 
 if (appConfig.enableMock) {
     import('./mock')
+}
+
+// ۲. فعال‌سازی vConsole فقط در محیط برنامه‌نویسی
+if (import.meta.env?.DEV) { 
+    new VConsole()
 }
 
 function App() {

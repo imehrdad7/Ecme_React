@@ -5,12 +5,28 @@ import { useSessionUser } from '@/store/authStore'
 import { Link } from 'react-router-dom'
 import { PiUserDuotone, PiGearDuotone, PiPulseDuotone, PiSignOutDuotone } from 'react-icons/pi'
 import { useAuth } from '@/auth'
+import appConfig from '@/configs/app.config'
+
 
 type DropdownList = {
     label: string
     path: string
     icon: JSX.Element
 }
+const getFullAvatarUrl = (avatarPath?: string | null) => {
+    if (!avatarPath) return '';
+    
+    // اگر آدرس از قبل کامل بود یا blob موقت بود، دست نزن
+    if (avatarPath.startsWith('http') || avatarPath.startsWith('blob:')) {
+        return avatarPath;
+    }
+    
+    // تنظیم آی‌پی و پورت دقیق بک‌اند
+    const backendBaseUrl = appConfig.apiPrefix; 
+    const separator = avatarPath.startsWith('/') ? '' : '/';
+    
+    return `${backendBaseUrl}${separator}${avatarPath}`;
+};
 
 const dropdownItemList: DropdownList[] = [
     {
@@ -31,7 +47,7 @@ const dropdownItemList: DropdownList[] = [
 ]
 
 const _UserDropdown = () => {
-    const { avatar, userName, email } = useSessionUser((state) => state.user)
+    const { avatarFileName, firstName,lastName, phoneNumber } = useSessionUser((state) => state.user)
 
     const { signOut } = useAuth()
 
@@ -40,7 +56,7 @@ const _UserDropdown = () => {
     }
 
     const avatarProps = {
-        ...(avatar ? { src: avatar } : { icon: <PiUserDuotone /> }),
+        ...(avatarFileName ? { src: getFullAvatarUrl(avatarFileName) } : { icon: <PiUserDuotone /> }),
     }
 
     return (
@@ -59,10 +75,10 @@ const _UserDropdown = () => {
                     <Avatar {...avatarProps} />
                     <div>
                         <div className="font-bold text-gray-900 dark:text-gray-100">
-                            {userName || 'Anonymous'}
+                            { firstName +' '+ lastName|| 'Anonymous'}
                         </div>
                         <div className="text-xs">
-                            {email || 'No email available'}
+                            {phoneNumber || 'No Phone available'}
                         </div>
                     </div>
                 </div>

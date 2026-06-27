@@ -14,9 +14,23 @@ export type ThemeConfig = {
 }
 
 /**
- * Since some configurations need to be match with specific themes,
- * we recommend to use the configuration that generated from demo.
+تغییر تم نرم افزار 
+Change Theme
  */
+
+// export const themeConfig: ThemeConfig = {
+//     themeSchema: '',
+//     direction: THEME_ENUM.DIR_RTL,
+//     mode: THEME_ENUM.MODE_LIGHT,
+//     panelExpand: false,
+//     controlSize: 'md',
+//     layout: {
+//         type: THEME_ENUM.LAYOUT_COLLAPSIBLE_SIDE,
+//         sideNavCollapse: false,
+//     },
+// }
+
+
 export const themeConfig: ThemeConfig = {
     themeSchema: '',
     direction: THEME_ENUM.DIR_RTL,
@@ -25,6 +39,6 @@ export const themeConfig: ThemeConfig = {
     controlSize: 'md',
     layout: {
         type: THEME_ENUM.LAYOUT_COLLAPSIBLE_SIDE,
-        sideNavCollapse: false,
+        sideNavCollapse: true,
     },
 }

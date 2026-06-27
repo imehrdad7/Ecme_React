@@ -11,7 +11,7 @@ const guideNavigationConfig: NavigationTree[] = [
         key: 'راهنما',
         path: '',
         title: 'راهنما',
-        translateKey: 'nav.guide.guide',
+        translateKey: '',
         icon: 'راهنما',
         type: NAV_ITEM_TYPE_TITLE,
         authority: [ADMIN, USER],

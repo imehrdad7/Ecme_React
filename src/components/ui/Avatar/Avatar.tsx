@@ -83,6 +83,7 @@ const Avatar = forwardRef<HTMLSpanElement, AvatarProps>((props, ref) => {
             />
         )
     } else if (icon) {
+        
         children = (
             <span className={classNames('avatar-icon', `avatar-icon-${size}`)}>
                 {icon}

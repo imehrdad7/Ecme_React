@@ -7,7 +7,7 @@ import type { User } from '@/@types/auth'
 
 type Session = {
     signedIn: boolean
-}
+}   
 
 type AuthState = {
     session: Session
@@ -36,8 +36,10 @@ const initialState: AuthState = {
         signedIn: false,
     },
     user: {
-        avatar: '',
+        id:'',
+        avatarFileName: '',
         userName: '',
+        phoneNumber:'',
         email: '',
         authority: [],
     },

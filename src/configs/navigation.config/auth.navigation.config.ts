@@ -12,7 +12,7 @@ const authNavigationConfig: NavigationTree[] = [
         key: 'authentication',
         path: '',
         title: 'احراز هویت',
-        translateKey: 'nav.authentication.authentication',
+        translateKey: '',
         icon: 'authentication',
         type: NAV_ITEM_TYPE_TITLE,
         authority: [ADMIN, USER],

@@ -1,5 +1,5 @@
 {
-  "name": "ecme",
+  "name": "AnyBot",
   "private": true,
   "version": "1.0.4",
   "type": "module",
@@ -67,6 +67,7 @@
     "simplebar-react": "^3.2.6",
     "swr": "^2.2.5",
     "tailwind-merge": "^2.5.2",
+    "vconsole": "^3.15.1",
     "yet-another-react-lightbox": "^3.21.4",
     "zod": "^3.23.8",
     "zustand": "^4.5.5"

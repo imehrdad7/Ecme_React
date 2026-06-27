@@ -7,7 +7,7 @@ export type SignInResponse = {
     token: {
         token:string
         refreshToken:string
-    }};
+    };
     // user: {
     //     userId: string
     //     userName: string
@@ -20,7 +20,8 @@ export type SignInResponse = {
 export type SignUpResponse = SignInResponse
 
 export type SignUpCredential = {
-    fullname: string
+    firstName: string
+    lastName: string
     phonenumber: string
     password: string
 }
@@ -38,14 +39,28 @@ export type AuthRequestStatus = 'success' | 'failed' | ''
 export type AuthResult = Promise<{
     status: AuthRequestStatus
     message: string
+    errors?: Record<string, string[]>
+
 }>
 
+export type SignUpResult = {
+    status: 'success' | 'failed'
+    message: string
+    errors?: Record<string, string[]> 
+}
+
 export type User = {
-    userId?: string | null
-    avatar?: string | null
+    id: string 
+    avatarFileName?: string | null
+    firstName?: string | null
+    lastName?: string | null
     userName?: string | null
+    phoneNumber?: string | null
     email?: string | null
     authority?: string[]
+    companyId?: string
+    companyName?: string
+
 }
 
 export type Token = {

@@ -1,45 +1,43 @@
-import { useMemo, useEffect } from 'react'
+import { useEffect } from 'react'
 import Button from '@/components/ui/Button'
 import Upload from '@/components/ui/Upload'
 import Input from '@/components/ui/Input'
-import Select, { Option as DefaultOption } from '@/components/ui/Select'
 import Avatar from '@/components/ui/Avatar'
 import { Form, FormItem } from '@/components/ui/Form'
 import NumericInput from '@/components/shared/NumericInput'
-import { countryList } from '@/constants/countries.constant'
-import { components } from 'react-select'
-import type { ControlProps, OptionProps } from 'react-select'
-import { apiGetSettingsProfile } from '@/services/AccontsService'
+import Notification from '@/components/ui/Notification'
+import toast from '@/components/ui/toast'
 import sleep from '@/utils/sleep'
-import useSWR from 'swr'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, Controller } from 'react-hook-form'
 import { z } from 'zod'
-import { HiOutlineUser } from 'react-icons/hi'
-import { TbPlus } from 'react-icons/tb'
+import { HiOutlineUser, HiCamera, HiPencil, HiTrash } from 'react-icons/hi'
 import type { ZodType } from 'zod'
-import type { GetSettingsProfileResponse } from '../types'
+import { useSessionUser } from '@/store/authStore'
+import { apiGetUserProfile,apiUpdateUserProfile} from '@/services/AuthService'
+import appConfig from '@/configs/app.config'
 
 type ProfileSchema = {
     firstName: string
     lastName: string
     email: string
-    dialCode: string
     phoneNumber: string
     img: string
-    country: string
-    address: string
-    postcode: string
-    city: string
 }
-
-type CountryOption = {
-    label: string
-    dialCode: string
-    value: string
-}
-
-const { Control } = components
+const getFullAvatarUrl = (avatarPath?: string | null) => {
+    if (!avatarPath) return '';
+    
+    // اگر آدرس از قبل کامل بود یا blob موقت بود، دست نزن
+    if (avatarPath.startsWith('http') || avatarPath.startsWith('blob:')) {
+        return avatarPath;
+    }
+    
+    // تنظیم آی‌پی و پورت دقیق بک‌اند
+    const backendBaseUrl = appConfig.apiPrefix; 
+    const separator = avatarPath.startsWith('/') ? '' : '/';
+    
+    return `${backendBaseUrl}${separator}${avatarPath}`;
+};
 
 const validationSchema: ZodType<ProfileSchema> = z.object({
     firstName: z.string().min(1, { message: 'نام لازم است' }),
@@ -48,77 +46,13 @@ const validationSchema: ZodType<ProfileSchema> = z.object({
         .string()
         .min(1, { message: 'ایمیل لازم است' })
         .email({ message: 'ایمیل نامعتبر است' }),
-    dialCode: z.string().min(1, { message: 'لطفاً کد کشور خود را انتخاب کنید' }),
-    phoneNumber: z
-        .string()
-        .min(1, { message: 'لطفاً شماره موبایل خود را وارد کنید' }),
-    country: z.string().min(1, { message: 'لطفاً کشور را انتخاب کنید' }),
-    address: z.string().min(1, { message: 'آدرس لازم است' }),
-    postcode: z.string().min(1, { message: 'کد پستی لازم است' }),
-    city: z.string().min(1, { message: 'شهر لازم است' }),
+    phoneNumber: z.string(),
     img: z.string(),
 })
 
-
-const CustomSelectOption = (
-    props: OptionProps<CountryOption> & { variant: 'country' | 'phone' },
-) => {
-    return (
-        <DefaultOption<CountryOption>
-            {...props}
-            customLabel={(data, label) => (
-                <span className="flex items-center gap-2">
-                    <Avatar
-                        shape="circle"
-                        size={20}
-                        src={`/img/countries/${data.value}.png`}
-                    />
-                    {props.variant === 'country' && <span>{label}</span>}
-                    {props.variant === 'phone' && <span>{data.dialCode}</span>}
-                </span>
-            )}
-        />
-    )
-}
-
-const CustomControl = ({ children, ...props }: ControlProps<CountryOption>) => {
-    const selected = props.getValue()[0]
-    return (
-        <Control {...props}>
-            {selected && (
-                <Avatar
-                    className="ltr:ml-4 rtl:mr-4"
-                    shape="circle"
-                    size={20}
-                    src={`/img/countries/${selected.value}.png`}
-                />
-            )}
-            {children}
-        </Control>
-    )
-}
-
 const SettingsProfile = () => {
-    const { data, mutate } = useSWR(
-        '/api/settings/profile/',
-        () => apiGetSettingsProfile<GetSettingsProfileResponse>(),
-        {
-            revalidateOnFocus: false,
-            revalidateIfStale: false,
-            revalidateOnReconnect: false,
-        },
-    )
-
-    const dialCodeList = useMemo(() => {
-        const newCountryList: Array<CountryOption> = JSON.parse(
-            JSON.stringify(countryList),
-        )
-
-        return newCountryList.map((country) => {
-            country.label = country.dialCode
-            return country
-        })
-    }, [])
+    
+    const { user, setUser } = useSessionUser()
 
     const beforeUpload = (files: FileList | null) => {
         let valid: string | boolean = true
@@ -127,7 +61,7 @@ const SettingsProfile = () => {
         if (files) {
             for (const file of files) {
                 if (!allowedFileType.includes(file.type)) {
-                    valid = 'Please upload a .jpeg or .png file!'
+                    valid = 'لطفاً فقط فایل‌های png یا jpeg آپلود کنید!'
                 }
             }
         }
@@ -142,292 +76,238 @@ const SettingsProfile = () => {
         control,
     } = useForm<ProfileSchema>({
         resolver: zodResolver(validationSchema),
-    })
-
-    useEffect(() => {
-        if (data) {
-            reset(data)
+        defaultValues: {
+            firstName: user?.firstName || '',
+            lastName: user?.lastName || '',
+            email: user?.email || '',
+            phoneNumber: user?.phoneNumber || user?.userName || '', 
+            img: getFullAvatarUrl(user.avatarFileName),    
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [data])
+    })
+    useEffect(() => {
+        if (user) {
+            reset({
+                firstName: user.firstName || '',
+                lastName: user.lastName || '',
+                email: user.email || '',
+                phoneNumber: user.phoneNumber || user.userName || '',
+                img: user.avatarFileName || '',
+            })
+        }
+    }, [user, reset])
 
     const onSubmit = async (values: ProfileSchema) => {
-        await sleep(500)
-        if (data) {
-            mutate({ ...data, ...values }, false)
+        
+        try {
+            await sleep(500) 
+           debugger
+            const formData = new FormData();
+            formData.append('UserId', user.id);
+            formData.append('FirstName', values.firstName || '');
+            formData.append('LastName', values.lastName || '');
+            formData.append('Email', values.email || '');
+            if (values.img === '') {
+                formData.append('DeleteAvatar', 'true');
+            } 
+            else if (values.img.startsWith('blob:')) {
+                const response = await fetch(values.img);
+                const blobData = await response.blob();
+                formData.append('AvatarFile', blobData, 'avatar.jpg');
+                formData.append('DeleteAvatar', 'false');
+            } 
+            else {
+                formData.append('DeleteAvatar', 'false');
+            }
+
+            await apiUpdateUserProfile(user.id, formData)
+            
+            const phone = user.phoneNumber;
+            try {
+                const profileResp = await apiGetUserProfile(phone?? "")
+                if (profileResp) {
+                    setUser(profileResp) 
+                }
+            } 
+            catch (profileError) {
+                console.error('خطا در دریافت اطلاعات کاربر:', profileError)
+            }
+
+            toast.push(
+                <Notification title="موفقیت" type="success">
+                    اطلاعات پروفایل با موفقیت بروزرسانی شد.
+                </Notification>,
+                { placement: 'top-center' }
+            )
+        } catch (error) {
+            toast.push(
+                <Notification title="خطا" type="danger">
+                    مشکلی در ذخیره اطلاعات به وجود آمد.
+                </Notification>,
+                { placement: 'top-center' }
+            )
         }
     }
 
     return (
-        <>
-            <h4 className="mb-8">اطلاعات شخصی</h4>
-            <Form onSubmit={handleSubmit(onSubmit)}>
-                <div className="mb-8">
-                    <Controller
-                        name="img"
-                        control={control}
-                        render={({ field }) => (
+        <Form onSubmit={handleSubmit(onSubmit)}>
+            {/* هدر با دکمه ذخیره در روبه‌رو */}
+            <div className="flex items-center justify-between mb-8 border-b border-gray-200 dark:border-gray-700 pb-4">
+                <h4 className="mb-0">اطلاعات شخصی</h4>
+                <Button
+                    variant="solid"
+                    type="submit"
+                    loading={isSubmitting}
+                >
+                    ذخیره تغییرات
+                </Button>
+            </div>
+
+            <Controller
+                name="img"
+                control={control}
+                render={({ field }) => (
+                    <div className="flex items-center mb-8">
+                        {!field.value ? (
+                            /* حالت بدون عکس: خود آواتار دکمه آپلود است */
+                            <Upload
+                                showList={false}
+                                uploadLimit={1}
+                                beforeUpload={beforeUpload}
+                                onChange={(files) => {
+                                    if (files.length > 0) {
+                                        field.onChange(URL.createObjectURL(files[0]))
+                                    }
+                                }}
+                            >
+                                <div className="relative group cursor-pointer rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-100 flex items-center justify-center" style={{ width: 90, height: 90 }}>
+                                    <HiOutlineUser className="text-4xl text-gray-300 group-hover:opacity-0 transition-opacity duration-300" />
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/40 transition-all duration-300">
+                                        <HiCamera className="text-2xl text-white" />
+                                    </div>
+                                </div>
+                            </Upload>
+                        ) : (
+                            /* حالت دارای عکس: دو دکمه آیکونی کوچک و شیک در کنار عکس */
                             <div className="flex items-center gap-4">
                                 <Avatar
                                     size={90}
-                                    className="border-4 border-white bg-gray-100 text-gray-300 shadow-lg"
-                                    icon={<HiOutlineUser />}
-                                    src={field.value}
+                                    className="border-4 border-white shadow-lg"
+                                    src={getFullAvatarUrl(field.value)}
                                 />
-                                <div className="flex items-center gap-2">
+                                <div className="flex gap-2">
                                     <Upload
                                         showList={false}
                                         uploadLimit={1}
                                         beforeUpload={beforeUpload}
                                         onChange={(files) => {
                                             if (files.length > 0) {
-                                                field.onChange(
-                                                    URL.createObjectURL(
-                                                        files[0],
-                                                    ),
-                                                )
+                                                field.onChange(URL.createObjectURL(files[0]))
                                             }
                                         }}
                                     >
                                         <Button
-                                            variant="solid"
                                             size="sm"
                                             type="button"
-                                            icon={<TbPlus />}
-                                        >
-                                            آپلود تصویر
-                                        </Button>
+                                            icon={<HiPencil />}
+                                            className="text-gray-500 hover:text-blue-500 hover:bg-blue-50"
+                                        />
                                     </Upload>
                                     <Button
                                         size="sm"
                                         type="button"
-                                        onClick={() => {
-                                            field.onChange('')
-                                        }}
-                                    >
-                                        حذف
-                                    </Button>
+                                        className="text-gray-500 hover:text-red-500 hover:bg-red-50"
+                                        icon={<HiTrash />}
+                                        onClick={() => field.onChange('')}
+                                    />
                                 </div>
                             </div>
                         )}
-                    />
-                </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                    <FormItem
-                        label="نام"
-                        invalid={Boolean(errors.firstName)}
-                        errorMessage={errors.firstName?.message}
-                    >
-                        <Controller
-                            name="firstName"
-                            control={control}
-                            render={({ field }) => (
-                                <Input
-                                    type="text"
-                                    autoComplete="off"
-                                    placeholder="نام"
-                                    {...field}
-                                />
-                            )}
-                        />
-                    </FormItem>
-                    <FormItem
-                        label="نام کاربری"
-                        invalid={Boolean(errors.lastName)}
-                        errorMessage={errors.lastName?.message}
-                    >
-                        <Controller
-                            name="lastName"
-                            control={control}
-                            render={({ field }) => (
-                                <Input
-                                    type="text"
-                                    autoComplete="off"
-                                    placeholder="نام کاربری"
-                                    {...field}
-                                />
-                            )}
-                        />
-                    </FormItem>
-                </div>
+                    </div>
+                )}
+            />
+
+            <div className="grid md:grid-cols-2 gap-4">
                 <FormItem
-                    label="ایمیل"
-                    invalid={Boolean(errors.email)}
-                    errorMessage={errors.email?.message}
+                    label="نام"
+                    invalid={Boolean(errors.firstName)}
+                    errorMessage={errors.firstName?.message}
                 >
                     <Controller
-                        name="email"
-                        control={control}
-                        render={({ field }) => (
-                            <Input
-                                type="email"
-                                autoComplete="off"
-                                placeholder="ایمیل"
-                                {...field}
-                            />
-                        )}
-                    />
-                </FormItem>
-                <div className="flex items-end gap-4 w-full mb-6">
-                    <FormItem
-                        invalid={
-                            Boolean(errors.phoneNumber) ||
-                            Boolean(errors.dialCode)
-                        }
-                    >
-                        <label className="form-label mb-2">شماره تماس</label>
-                        <Controller
-                            name="dialCode"
-                            control={control}
-                            render={({ field }) => (
-                                <Select<CountryOption>
-                                    options={dialCodeList}
-                                    {...field}
-                                    className="w-[150px]"
-                                    components={{
-                                        Option: (props) => (
-                                            <CustomSelectOption
-                                                variant="phone"
-                                                {...(props as OptionProps<CountryOption>)}
-                                            />
-                                        ),
-                                        Control: CustomControl,
-                                    }}
-                                    placeholder=""
-                                    value={dialCodeList.filter(
-                                        (option) =>
-                                            option.dialCode === field.value,
-                                    )}
-                                    onChange={(option) =>
-                                        field.onChange(option?.dialCode)
-                                    }
-                                />
-                            )}
-                        />
-                    </FormItem>
-                    <FormItem
-                        className="w-full"
-                        invalid={
-                            Boolean(errors.phoneNumber) ||
-                            Boolean(errors.dialCode)
-                        }
-                        errorMessage={errors.phoneNumber?.message}
-                    >
-                        <Controller
-                            name="phoneNumber"
-                            control={control}
-                            render={({ field }) => (
-                                <NumericInput
-                                    autoComplete="off"
-                                    placeholder="شماره تماس"
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                    onBlur={field.onBlur}
-                                />
-                            )}
-                        />
-                    </FormItem>
-                </div>
-                <h4 className="mb-6">اطلاعات ادرس</h4>
-                <FormItem
-                    label="Country"
-                    invalid={Boolean(errors.country)}
-                    errorMessage={errors.country?.message}
-                >
-                    <Controller
-                        name="country"
-                        control={control}
-                        render={({ field }) => (
-                            <Select<CountryOption>
-                                options={countryList}
-                                {...field}
-                                components={{
-                                    Option: (props) => (
-                                        <CustomSelectOption
-                                            variant="country"
-                                            {...(props as OptionProps<CountryOption>)}
-                                        />
-                                    ),
-                                    Control: CustomControl,
-                                }}
-                                placeholder=""
-                                value={countryList.filter(
-                                    (option) => option.value === field.value,
-                                )}
-                                onChange={(option) =>
-                                    field.onChange(option?.value)
-                                }
-                            />
-                        )}
-                    />
-                </FormItem>
-                <FormItem
-                    label="ادرس"
-                    invalid={Boolean(errors.address)}
-                    errorMessage={errors.address?.message}
-                >
-                    <Controller
-                        name="address"
+                        name="firstName"
                         control={control}
                         render={({ field }) => (
                             <Input
                                 type="text"
                                 autoComplete="off"
-                                placeholder="ادرس"
+                                placeholder="نام"
                                 {...field}
                             />
                         )}
                     />
                 </FormItem>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormItem
-                        label="شهر"
-                        invalid={Boolean(errors.city)}
-                        errorMessage={errors.city?.message}
-                    >
-                        <Controller
-                            name="city"
-                            control={control}
-                            render={({ field }) => (
-                                <Input
-                                    type="text"
-                                    autoComplete="off"
-                                    placeholder="شهر"
-                                    {...field}
-                                />
-                            )}
+                <FormItem
+                    label="نام خانوادگی"
+                    invalid={Boolean(errors.lastName)}
+                    errorMessage={errors.lastName?.message}
+                >
+                    <Controller
+                        name="lastName"
+                        control={control}
+                        render={({ field }) => (
+                            <Input
+                                type="text"
+                                autoComplete="off"
+                                placeholder="نام خانوادگی"
+                                {...field}
+                            />
+                        )}
+                    />
+                </FormItem>
+            </div>
+            
+            <FormItem
+                label="ایمیل"
+                invalid={Boolean(errors.email)}
+                errorMessage={errors.email?.message}
+            >
+                <Controller
+                    name="email"
+                    control={control}
+                    render={({ field }) => (
+                        <Input
+                            type="email"
+                            autoComplete="off"
+                            placeholder="ایمیل"
+                            {...field}
                         />
-                    </FormItem>
-                    <FormItem
-                        label="کد پستی"
-                        invalid={Boolean(errors.postcode)}
-                        errorMessage={errors.postcode?.message}
-                    >
-                        <Controller
-                            name="postcode"
-                            control={control}
-                            render={({ field }) => (
-                                <Input
-                                    type="text"
-                                    autoComplete="off"
-                                    placeholder="کد پستی"
-                                    {...field}
-                                />
-                            )}
+                    )}
+                />
+            </FormItem>
+
+            <FormItem
+                className="w-full mb-6"
+                invalid={Boolean(errors.phoneNumber)}
+                errorMessage={errors.phoneNumber?.message}
+            >
+                <label className="form-label mb-2">شماره موبایل (نام کاربری)</label>
+                <Controller
+                    name="phoneNumber"
+                    control={control}
+                    render={({ field }) => (
+                        <NumericInput
+                            autoComplete="off"
+                            placeholder="شماره موبایل"
+                            disabled={true}
+                            dir="ltr"
+                            className="text-left font-mono text-lg"
+                            value={field.value}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
                         />
-                    </FormItem>
-                </div>
-                <div className="flex justify-end">
-                    <Button
-                        variant="solid"
-                        type="submit"
-                        loading={isSubmitting}
-                    >
-                        ذخیره
-                    </Button>
-                </div>
-            </Form>
-        </>
+                    )}
+                />
+            </FormItem>
+        </Form>
     )
 }
 

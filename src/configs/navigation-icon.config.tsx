@@ -86,6 +86,7 @@ import {
     PiShareNetworkDuotone,
     PiToolboxDuotone,
     PiCodeDuotone,
+    PiRobot
 } from 'react-icons/pi'
 
 export type NavigationIcons = Record<string, JSX.Element>
@@ -187,6 +188,7 @@ const navigationIcon: NavigationIcons = {
     sharedComponentDoc: <PiShareNetworkDuotone />,
     utilsDoc: <PiToolboxDuotone />,
     changeLog: <PiCodeDuotone />,
+    Robot:<PiRobot/>
 }
 
 export default navigationIcon

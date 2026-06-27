@@ -29,28 +29,29 @@ const _SidePanel = (props: SidePanelProps) => {
             }
         }
     }
-
-    return (
-        <>
-            <div
-                className={classNames('text-2xl', className)}
-                onClick={openPanel}
-                {...rest}
-            >
-                <PiGearDuotone />
-            </div>
-            <Drawer
-                title="پیکربندی تم"
-                isOpen={panelExpand}
-                placement={direction === 'rtl' ? 'left' : 'right'}
-                width={375}
-                onClose={closePanel}
-                onRequestClose={closePanel}
-            >
-                <SidePanelContent callBackClose={closePanel} />
-            </Drawer>
-        </>
-    )
+    if (import.meta.env?.DEV) { 
+        return (
+            <>
+                <div
+                    className={classNames('text-2xl', className)}
+                    onClick={openPanel}
+                    {...rest}
+                    >
+                    <PiGearDuotone />
+                </div>
+                <Drawer
+                    title="پیکربندی تم"
+                    isOpen={panelExpand}
+                    placement={direction === 'rtl' ? 'left' : 'right'}
+                    width={375}
+                    onClose={closePanel}
+                    onRequestClose={closePanel}
+                    >
+                    <SidePanelContent callBackClose={closePanel} />
+                </Drawer>
+            </>
+        )
+    }
 }
 
 const SidePanel = withHeaderItem(_SidePanel)

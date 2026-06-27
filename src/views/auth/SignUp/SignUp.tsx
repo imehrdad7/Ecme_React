@@ -26,7 +26,7 @@ export const SignUpBase = ({
             <div className="mb-8">
                 <h3 className="mb-1">ثبت‌نام</h3>
                 <p className="font-semibold heading-text">
-                    و بیایید با دوره آزمایشی رایگان شما شروع کنیم
+                    همین حالا شروع کنید؛ یک دوره آزمایشی رایگان در انتظار شماست.
                 </p>
             </div>
             {message && (

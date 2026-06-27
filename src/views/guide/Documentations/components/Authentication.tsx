@@ -197,7 +197,7 @@ const Authentication = () => {
             } catch (errors: any) {
                 return {
                     status: 'failed',
-                    message: errors?.response?.data?.message || errors.toString(),
+                    message: errors?.response?.data?.Message || errors.toString(),
                 }
             }
         }

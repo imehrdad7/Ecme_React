@@ -5,6 +5,91 @@ import type { Routes } from '@/@types/routes'
 
 const conceptsRoute: Routes = [
     {
+        key: 'concepts.bots.botList',
+        path: '/concepts/bots/bot-list',
+        component: lazy(() => import('@/views/concepts/bots/bot-list/BotList')),
+        authority: [ADMIN, USER],
+    },
+    {
+        key: 'concepts.bots.botCreate',
+        path: '/concepts/bots/bot-create',
+        component: lazy(() => import('@/views/concepts/bots/bot-create/BotCreate')),
+        authority: [ADMIN, USER],
+    },
+    {
+        key: 'concepts.bots.botEdit',
+        path: '/concepts/bots/bot-edit/:id',
+        component: lazy(() => import('@/views/concepts/bots/bot-edit/BotEdit')),
+        authority: [ADMIN, USER],
+    },
+    {
+        key: 'concepts.autoReply.list',
+        path: '/concepts/auto-reply/list',
+        component: lazy(() => import('@/views/concepts/auto-reply/AutoReplyList')),
+        authority: [ADMIN, USER],
+    },
+    {
+        key: 'concepts.autoReply.create',
+        path: '/concepts/auto-reply/create', 
+        component: lazy(() => import('@/views/concepts/auto-reply/AutoReplyForm')),
+        authority: [ADMIN, USER],
+    },
+    {
+        key: 'concepts.autoReply.edit',
+        path: '/concepts/auto-reply/edit/:id',
+        component: lazy(() => import('@/views/concepts/auto-reply/AutoReplyForm')),
+        authority: [ADMIN, USER],
+    },
+    {
+        key: 'concepts.inbox',
+        path: '/concepts/inbox',
+        component: lazy(() => import('@/views/concepts/Inbox/Inbox')),
+        authority: [ADMIN, USER],
+    },
+    {
+        key: 'concepts.dashboard',
+        path: '/concepts/dashboard',
+        component: lazy(() => import('@/views/concepts/dashboard/Dashboard')),
+        authority: [ADMIN, USER],
+    },
+    {
+        key: 'concepts.Integrations',
+        path: '/concepts/Integrations',
+        component: lazy(() => import('@/views/concepts/integrations/Integrations')),
+        authority: [ADMIN, USER],
+    },
+    {
+        key: 'concepts.WidgetBuilder',
+        path: '/concepts/WidgetBuilder',
+        component: lazy(() => import('@/views/concepts/widget-builder/WidgetBuilder')),
+        authority: [ADMIN, USER],
+    },
+    {
+        key: 'concepts.CampaignBuilder',
+        path: '/concepts/CampaignBuilder',
+        component: lazy(() => import('@/views/concepts/campaigns/CampaignBuilder')),
+        authority: [ADMIN, USER],
+    },
+    {
+        key: 'concepts.crm',
+        path: '/concepts/contacts',
+        component: lazy(() => import('@/views/concepts/crm/Contacts')),
+        authority: [ADMIN, USER],
+    },{
+        key: 'concepts.aiConfig',
+        path: '/concepts/ai-settings',
+        component: lazy(() => import('@/views/concepts/ai-config/AIFallback')),
+        authority: [],
+    },
+
+
+
+
+
+
+
+
+    {
         key: 'concepts.ai.chat',
         path: `${CONCEPTS_PREFIX_PATH}/ai/chat`,
         component: lazy(() => import('@/views/concepts/ai/Chat')),

@@ -12,7 +12,7 @@ const conceptsNavigationConfig: NavigationTree[] = [
         key: 'concepts',
         path: '',
         title: 'مفاهیم',
-        translateKey: 'nav.concepts',
+        translateKey: '',
         icon: 'concepts',
         type: NAV_ITEM_TYPE_TITLE,
         authority: [ADMIN, USER],

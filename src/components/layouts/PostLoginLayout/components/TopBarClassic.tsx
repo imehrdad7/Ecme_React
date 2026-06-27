@@ -35,9 +35,8 @@ const TopBarClassic = ({ children }: CommonProps) => {
                         headerEnd={
                             <>
                                 <Search />
-                                <LanguageSelector />
+                                {/* <LanguageSelector /> */}
                                 <Notification />
-                                <SidePanel />
                                 <UserProfileDropdown hoverable={false} />
                             </>
                         }

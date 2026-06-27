@@ -16,7 +16,6 @@ type ThemeAction = {
 }
 
 const inititialThemeState = themeConfig
-
 export const useThemeStore = create<ThemeState & ThemeAction>()(
     persist(
         (set) => ({

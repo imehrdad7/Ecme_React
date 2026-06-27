@@ -8,6 +8,7 @@ import {
     TbBell,
     TbFileDollar,
     TbRefreshDot,
+    TbBrandOffice,
 } from 'react-icons/tb'
 import type { View } from '../types'
 import type { ReactNode } from 'react'
@@ -16,6 +17,7 @@ const { MenuItem } = Menu
 
 const menuList: { label: string; value: View; icon: ReactNode }[] = [
     { label: 'پروفایل', value: 'profile', icon: <TbUserSquare /> },
+    { label: 'شرکت', value: 'companySetting', icon: <TbBrandOffice /> },
     { label: 'امنیت', value: 'security', icon: <TbLock /> },
     { label: 'اعلان', value: 'notification', icon: <TbBell /> },
     { label: 'صورتحساب', value: 'billing', icon: <TbFileDollar /> },

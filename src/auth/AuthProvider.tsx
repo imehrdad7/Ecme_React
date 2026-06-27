@@ -2,12 +2,13 @@ import { useRef, useImperativeHandle, forwardRef } from 'react'
 import AuthContext from './AuthContext'
 import appConfig from '@/configs/app.config'
 import { useSessionUser, useToken } from '@/store/authStore'
-import { apiSignIn, apiSignOut, apiSignUp } from '@/services/AuthService'
+import { apiSignIn, apiSignOut, apiSignUp ,apiGetUserProfile} from '@/services/AuthService'
 import { REDIRECT_URL_KEY } from '@/constants/app.constant'
 import { useNavigate } from 'react-router-dom'
 import type {
     SignInCredential,
     SignUpCredential,
+    SignUpResult,
     AuthResult,
     OauthSignInCallbackPayload,
     User,
@@ -62,7 +63,6 @@ function AuthProvider({ children }: AuthProviderProps) {
     }
 
     const handleSignIn = (tokens: Token, user?: User) => {
-        debugger
         setToken(tokens.accessToken)
         setSessionSignedIn(true)
 
@@ -73,16 +73,35 @@ function AuthProvider({ children }: AuthProviderProps) {
 
     const handleSignOut = () => {
         setToken('')
-        setUser({})
+       // setUser({})
         setSessionSignedIn(false)
     }
 
-    const signIn = async (values: SignInCredential): AuthResult => {
-        try {
+const signIn = async (values: SignInCredential): AuthResult => {
+            try {
             const resp = await apiSignIn(values)
             if (resp) {
-                debugger
-                handleSignIn({ accessToken: resp.token })
+                const tokenData: Token = typeof resp.token === 'string'
+                ? { accessToken: resp.token }
+                : { 
+                    accessToken: resp.token.token
+                };
+                handleSignIn(tokenData)
+
+                const phone = values.phonenumber;
+                try {
+                    const profileResp = await apiGetUserProfile(phone)
+                    if (profileResp) {
+                        // ذخیره اطلاعات کاربر در استیت سراسری سیستم
+                        setUser(profileResp) 
+                    }
+                } catch (profileError) {
+                    console.error('خطا در دریافت اطلاعات کاربر:', profileError)
+                    // در صورت نیاز می‌توانید خطا را اینجا مدیریت کنید
+                }
+
+
+
                 redirect()
                 return {
                     status: 'success',
@@ -97,35 +116,33 @@ function AuthProvider({ children }: AuthProviderProps) {
         } catch (errors: any) {
             return {
                 status: 'failed',
-                message: errors?.response?.data?.message || errors.toString(),
+                message: errors?.response?.data?.Message || errors.toString(),
             }
         }
     }
 
-    const signUp = async (values: SignUpCredential): AuthResult => {
-        try {
-            const resp = await apiSignUp(values)
-            if (resp) {
-              //  handleSignIn({ accessToken: resp.token })
-                redirect()
-                return {
-                    status: 'success',
-                    message: '',
-                }
-            }
+   // ✅ ساختار صحیح
+const signUp = async (values: SignUpCredential) => {
+    try {
+        const resp = await apiSignUp(values)
+        if (resp) {
             return {
-                status: 'failed',
-                message: 'Unable to sign up',
-            }
-            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-        } catch (errors: any) {
-            return {
-                status: 'failed',
-                message: errors?.response?.data?.message || errors.toString(),
+                status: 'success',
+                message: ''
             }
         }
-    }
+    } catch (errors: any) {
+        // دیتایی که مستقیم از دات‌نت آمده را اینجا می‌گیریم
+        const backendData = errors?.response?.data;
 
+        return {
+            status: 'failed',
+            message: backendData?.message || backendData?.Message || errors.toString(),
+            // 👈 این خط طلایی را باید اضافه کنید:
+            errors: backendData?.errors || backendData?.Errors 
+        }
+    }
+}
     const signOut = async () => {
         try {
             await apiSignOut()
