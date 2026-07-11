@@ -7,9 +7,9 @@ import Table from '@/components/ui/Table'
 import Dialog from '@/components/ui/Dialog'
 import toast from '@/components/ui/toast'
 import Notification from '@/components/ui/Notification'
-import { FaTelegramPlane, FaInstagram, FaWhatsapp, FaGlobe, FaCommentDots, FaCommentAlt, FaRobot } from 'react-icons/fa' 
+import { FaTelegramPlane, FaInstagram, FaWhatsapp, FaGlobe, FaCommentDots, FaCommentAlt, FaRobot, FaPowerOff } from 'react-icons/fa'
 import { HiOutlineSearch, HiPlus, HiOutlinePencil, HiOutlineTrash, HiExclamation, HiOutlineUserGroup, HiOutlineLightningBolt } from 'react-icons/hi'
-import { apiGetBots, apiDeleteBot, apiActivateBot, BotResponse } from '@/services/botservice'
+import { apiGetBots, apiDeleteBot , apiActivateBot , apiDeactivateBot , BotResponse } from '@/services/botservice'
 
 const { Tr, Th, Td, THead, TBody } = Table
 
@@ -37,7 +37,7 @@ const BotList = () => {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
     const [selectedBot, setSelectedBot] = useState<BotResponse | null>(null)
-    const [activatingId, setActivatingId] = useState<string | null>(null)
+    const [togglingId, setTogglingId] = useState<string | null>(null)
 
     useEffect(() => {
         const fetchBots = async () => {
@@ -113,8 +113,39 @@ const BotList = () => {
         }
     }
 
+    const handleToggleBotStatus = async (bot: BotResponse) => {
+            setTogglingId(bot.id);
+            try {
+                if (bot.isActive) {
+                    // اگر فعال است، درخواست غیرفعال‌سازی بفرست
+                    await apiDeactivateBot(bot.id); // یا هر متدی که در بک‌اند دارید
+                } else {
+                    // اگر غیرفعال است، درخواست فعال‌سازی بفرست
+                    await apiActivateBot(bot.id);
+                }
+                
+                // آپدیت کردن وضعیت بات در لیست فرانت‌اند
+                setBots(prevBots => prevBots.map(b => b.id === bot.id ? { ...b, isActive: !bot.isActive } : b));
+                
+                toast.push(
+                    <Notification title="موفقیت" type="success" duration={3000}>
+                        ربات "{bot.name}" با موفقیت {bot.isActive ? 'غیرفعال' : 'فعال'} شد.
+                    </Notification>,
+                    { placement: 'top-center' }
+                );
+            } catch (error: any) {
+                toast.push(
+                    <Notification title="خطا در تغییر وضعیت" type="danger" duration={5000}>
+                        {error?.response?.data?.Message || error?.Message || 'مشکلی در تغییر وضعیت ربات پیش آمد.'}
+                    </Notification>,
+                    { placement: 'top-center' }
+                );
+            } finally {
+                setTogglingId(null);
+            }
+        }
     const handleActivateBot = async (bot: BotResponse) => {
-        setActivatingId(bot.id);
+        setTogglingId(bot.id);
         try {
             debugger
             await apiActivateBot(bot.id);
@@ -135,7 +166,7 @@ const BotList = () => {
                 { placement: 'top-center' }
             );
         } finally {
-            setActivatingId(null);
+            setTogglingId(null);
         }
     }
     const renderStatusDot = (isActive: boolean) => {
@@ -265,20 +296,18 @@ const BotList = () => {
                                             
                                             <Td>
                                                 <div className="flex items-center gap-3">
-                                                    {!bot.isActive && (
-                                                        <button 
-                                                            className="text-gray-500 hover:text-emerald-600 transition-colors disabled:opacity-50 flex items-center justify-center"
-                                                            onClick={() => handleActivateBot(bot)}
-                                                            disabled={activatingId === bot.id}
-                                                            title="اتصال و فعال‌سازی ربات"
-                                                        >
-                                                            {activatingId === bot.id ? (
-                                                                <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                                                            ) : (
-                                                                <HiOutlineLightningBolt className="text-xl" />
-                                                            )}
-                                                        </button>
-                                                    )}
+                                                   <button 
+                                                        className={`${bot.isActive ? 'text-orange-500 hover:text-orange-600' : 'text-emerald-500 hover:text-emerald-600'} transition-colors disabled:opacity-50 flex items-center justify-center`}
+                                                        onClick={() => handleToggleBotStatus(bot)}
+                                                        disabled={togglingId === bot.id}
+                                                        title={bot.isActive ? 'غیرفعال کردن ربات' : 'فعال‌سازی ربات'}
+                                                    >
+                                                        {togglingId === bot.id ? (
+                                                            <div className={`w-5 h-5 border-2 ${bot.isActive ? 'border-orange-500' : 'border-emerald-500'} border-t-transparent rounded-full animate-spin`}></div>
+                                                        ) : (
+                                                            <FaPowerOff className="text-xl" />
+                                                        )}
+                                                    </button>
                                                     <button 
                                                         className="text-gray-500 hover:text-indigo-600 transition-colors"
                                                         onClick={() => navigate(`/concepts/bots/bot-edit/${bot.id}`)}

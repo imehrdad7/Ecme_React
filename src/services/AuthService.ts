@@ -59,7 +59,7 @@ export async function apiGetUserProfile(phoneNumber: string) {
 
 export async function apiUpdateUserProfile(id: string, data: FormData) {   
     return ApiService.fetchDataWithAxios({
-        url: `/api/v1/Companies`,
+        url: `/api/v1/Users/${id}`,
         method: 'put',
         data
     })

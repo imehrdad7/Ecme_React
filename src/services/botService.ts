@@ -27,6 +27,16 @@ export type BotResponse = {
     createdAt: string;
 };
 
+export type ActiveBotListResponse ={
+    companyId: string;
+    id: string;
+    name: string;
+    platform: number; 
+    platformName: string;
+    isActive: boolean;
+    createdAt: string;
+}
+
 // ==========================================
 // API Functions
 // ==========================================
@@ -82,3 +92,10 @@ export async function apiDeleteBot(id: string) {
         method: 'delete'
     });
 }
+
+export async function apiGetActiveBotsByPlatform (platform: number) {
+   return ApiService.fetchDataWithAxios<ActiveBotListResponse[]>({
+        url: `/api/v1/Bots/active-by-platform/${platform}`,
+        method: 'get'
+    });
+};

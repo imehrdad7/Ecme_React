@@ -121,28 +121,35 @@ const signIn = async (values: SignInCredential): AuthResult => {
         }
     }
 
-   // ✅ ساختار صحیح
-const signUp = async (values: SignUpCredential) => {
-    try {
-        const resp = await apiSignUp(values)
-        if (resp) {
-            return {
-                status: 'success',
-                message: ''
+    const signUp = async (values: SignUpCredential) => {
+        try {
+            const resp = await apiSignUp(values); // یا هر تابع API که دارید
+            
+            if (resp) {
+                // 🌟 استفاده از 'as const' برای اینکه TS بفهمد این یک استرینگ معمولی نیست
+                return {
+                    status: 'success' as const, 
+                    message: 'ثبت‌نام با موفقیت انجام شد'
+                };
             }
-        }
-    } catch (errors: any) {
-        // دیتایی که مستقیم از دات‌نت آمده را اینجا می‌گیریم
-        const backendData = errors?.response?.data;
+            
+            // 🌟 جلوگیری از بازگشت undefined در صورتی که resp.data وجود نداشت
+            return {
+                status: 'failed' as const,
+                message: 'خطایی در دریافت اطلاعات رخ داد'
+            };
 
-        return {
-            status: 'failed',
-            message: backendData?.message || backendData?.Message || errors.toString(),
-            // 👈 این خط طلایی را باید اضافه کنید:
-            errors: backendData?.errors || backendData?.Errors 
+        } catch (error: any) {
+            // 🌟 ساختاردهی دقیق خروجی خطا برای جلب رضایت تایپ‌اسکریپت
+            return {
+                status: 'failed' as const,
+                message: error?.response?.data?.message || 'خطا در ارتباط با سرور',
+                // اگر بک‌اند شما ارورهای فیلدها را برمی‌گرداند، آن را اینطور پاس بدهید:
+                errors: error?.response?.data?.errors as Record<string, string[]> | undefined
+            };
         }
-    }
-}
+    };
+    
     const signOut = async () => {
         try {
             await apiSignOut()

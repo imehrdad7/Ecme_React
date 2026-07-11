@@ -92,15 +92,16 @@ const dashboardsNavigationConfig: NavigationTree[] = [
                 subMenu: [],
             },
             {
-                key: 'concepts.crm',
-                path: '/concepts/Contacts',
+                key: 'concepts.contacts',
+                path: '/concepts/contacts', // 🌟 استاندارد: استفاده از حروف کوچک برای URL
                 title: 'مخاطبین',
-                translateKey: 'nav.concepts.Contacts',
-                icon: 'chat',
+                translateKey: 'nav.concepts.contacts',
+                icon: 'customerList',
                 type: 'item',
                 authority: [ADMIN, USER],
                 subMenu: [],
             },
+            
             {
                 key: 'concepts.aiConfig',
                 path: '/concepts/ai-settings',

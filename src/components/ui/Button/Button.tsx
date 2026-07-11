@@ -30,7 +30,7 @@ export interface ButtonProps
     onClick?: (e: MouseEvent<HTMLButtonElement>) => void
     shape?: TypeAttributes.Shape
     size?: TypeAttributes.Size
-    variant?: 'solid' | 'plain' | 'default'
+    variant?: 'solid' | 'plain' | 'dashed' | 'default'
     iconAlignment?: 'start' | 'end'
 }
 
@@ -156,6 +156,19 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
         return getBtnColor(btn)
     }
 
+    const dashedColor = () => {
+        const btn = {
+            bgColor: active
+                ? `bg-gray-100 border border-gray-300 dark:bg-gray-500 dark:border-gray-500`
+                : `bg-white border border-gray-300 dark:bg-gray-700 dark:border-gray-700`,
+            textColor: `text-gray-600 dark:text-gray-100`,
+            hoverColor: active
+                ? ''
+                : `ring-primary dark:ring-white hover:border-primary dark:hover:border-white hover:ring-1 hover:text-primary dark:hover:text-white dark:hover:bg-transparent`,
+            activeColor: ``,
+        }
+        return getBtnColor(btn)
+    }
     const getBtnColor = ({
         bgColor,
         hoverColor,
@@ -175,6 +188,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
                 return plainColor()
             case 'default':
                 return defaultColor()
+                case 'dashed':
+                return dashedColor()
             default:
                 return defaultColor()
         }

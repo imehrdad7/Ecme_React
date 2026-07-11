@@ -73,7 +73,7 @@ const conceptsRoute: Routes = [
     {
         key: 'concepts.crm',
         path: '/concepts/contacts',
-        component: lazy(() => import('@/views/concepts/crm/Contacts')),
+        component: lazy(() => import('@/views/concepts/contacts/ContactsCRM')),
         authority: [ADMIN, USER],
     },{
         key: 'concepts.aiConfig',

@@ -100,7 +100,6 @@ const SettingsProfile = () => {
         
         try {
             await sleep(500) 
-           debugger
             const formData = new FormData();
             formData.append('UserId', user.id);
             formData.append('FirstName', values.firstName || '');
