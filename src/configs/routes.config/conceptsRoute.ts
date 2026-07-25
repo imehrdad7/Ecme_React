@@ -78,8 +78,38 @@ const conceptsRoute: Routes = [
     },{
         key: 'concepts.aiConfig',
         path: '/concepts/ai-settings',
-        component: lazy(() => import('@/views/concepts/ai-config/AIFallback')),
+        component: lazy(() => import('@/views/concepts/ai-config/AiSettingsPage')),
         authority: [],
+    },{
+        key: 'concepts.knowledge',
+        path: '/concepts/knowledge',
+        component: lazy(() => import('@/views/concepts/knowledge/KnowledgeManager')),
+        authority: [],
+    },{
+        key: 'concepts.plans',
+        path: '/concepts/plans',
+        component: lazy(() => import('@/views/concepts/plan/PlanList')),
+        authority: [],
+    },{
+        key: 'concepts.Pricing',
+        path: '/concepts/Pricing',
+        component: lazy(() => import('@/views/concepts/client/Pricing')),
+        authority: [],
+    },{
+        key: 'concepts.PricingCompare',
+        path: '/concepts/PricingCompare',
+        component: lazy(() => import('@/views/concepts/client/PricingCompare')),
+        authority: [],
+    },{
+        key: 'client.billing.verify',
+        path: '/billing/verify',
+        component: lazy(() => import('@/views/concepts/client/PaymentVerify')),
+        authority: ['client', 'user'], 
+    },{
+        key: 'concepts.InvoiceList',
+        path: '/concepts/InvoiceList',
+        component: lazy(() => import('@/views/concepts/invoices/InvoiceList')),
+        authority: ['client', 'user'], 
     },
 
 

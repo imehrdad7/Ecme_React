@@ -107,11 +107,50 @@ const dashboardsNavigationConfig: NavigationTree[] = [
                 path: '/concepts/ai-settings',
                 title: 'تنظیمات هوش مصنوعی',
                 translateKey: 'nav.concepts.ai-settings',
-                icon: 'chat',
+                icon: 'ai',
                 type: 'item',
                 authority: [ADMIN, USER],
                 subMenu: [],
             },
+            {
+                key: 'concepts.knowledge',
+                path: '/concepts/knowledge',
+                title: 'تنظیمات پایگاه دانش',
+                translateKey: 'nav.concepts.knowledge',
+                icon: 'dashboardMarketing',
+                type: 'item',
+                authority: [ADMIN, USER],
+                subMenu: [],
+            },   {
+                key: 'concepts.plans',
+                path: '/concepts/plans',
+                title: 'پلن‌ها',
+                translateKey: 'nav.concepts.plans',
+                icon: 'dashboardMarketing',
+                type: 'item',
+                authority: [ADMIN, USER],
+                subMenu: [],
+            },   {
+                key: 'concepts.Pricing',
+                path: '/concepts/Pricing',
+                title: 'خرید پلن',
+                translateKey: 'nav.concepts.Pricing',
+                icon: 'dashboardMarketing',
+                type: 'item',
+                authority: [ADMIN, USER],
+                subMenu: [],
+            }, {
+                key: 'concepts.InvoiceList',
+                path: '/concepts/InvoiceList',
+                title: 'تاریخچه خرید',
+                translateKey: 'nav.concepts.InvoiceList',
+                icon: 'dashboardEcommerce',
+                type: 'item',
+                authority: [ADMIN, USER],
+                subMenu: [],
+            },
+
+
 
 
 

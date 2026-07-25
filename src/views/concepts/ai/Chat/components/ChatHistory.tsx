@@ -2,7 +2,7 @@ import { Fragment } from 'react'
 import ScrollBar from '@/components/ui/ScrollBar'
 import ChatHistoryItem from './ChatHistoryItem'
 import { usGenerativeChatStore } from '../store/generativeChatStore'
-import { apiGetChatHistory } from '@/services/AiService'
+import { apiGetChatHistory } from '@/services/AiServiceOrg'
 
 import useSWR from 'swr'
 import type { GetChatHistoryResponse } from '../types'

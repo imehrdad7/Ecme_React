@@ -7,11 +7,13 @@ import appConfig from './configs/app.config'
 import './locales'
 import VConsole from 'vconsole'
 
+import GlobalErrorModal from '@/components/ui/GlobalErrorModal' 
+import LicenseWarningBanner from '@/components/ui/LicenseWarningBanner'
+
 if (appConfig.enableMock) {
     import('./mock')
 }
 
-// ۲. فعال‌سازی vConsole فقط در محیط برنامه‌نویسی
 if (import.meta.env?.DEV) { 
     new VConsole()
 }
@@ -21,10 +23,14 @@ function App() {
         <Theme>
             <BrowserRouter>
                 <AuthProvider>
+                    <LicenseWarningBanner />
                     <Layout>
                         <Views />
                     </Layout>
                 </AuthProvider>
+                
+                <GlobalErrorModal />
+                
             </BrowserRouter>
         </Theme>
     )

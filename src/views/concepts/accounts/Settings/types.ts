@@ -5,6 +5,8 @@ export type View =
     | 'billing'
     | 'integration'
     | 'companySetting'
+    | 'SettingSubscription'
+
 
 export type CreditCard = {
     cardHolderName: string

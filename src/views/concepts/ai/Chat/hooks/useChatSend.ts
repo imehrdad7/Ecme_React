@@ -1,5 +1,5 @@
 import { usGenerativeChatStore } from '../store/generativeChatStore'
-import { apiPostChat } from '@/services/AiService'
+import { apiPostChat } from '@/services/AiServiceOrg'
 import dayjs from 'dayjs'
 import uniqueId from 'lodash/uniqueId'
 import type { PostAiChatResponse } from '../types'

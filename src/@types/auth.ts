@@ -60,7 +60,7 @@ export type User = {
     authority?: string[]
     companyId?: string
     companyName?: string
-
+    subscriptionEndDate?: string | null
 }
 
 export type Token = {

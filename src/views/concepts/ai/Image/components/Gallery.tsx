@@ -5,7 +5,7 @@ import GalleryImage from './GalleryImage'
 import Masonry from '@/components/shared/Masonry'
 import { useImageGeneratorStore } from '../store/imageGeneratorStore'
 import useInfiniteScroll from '@/utils/hooks/useInfiniteScroll'
-import { apiGetImages } from '@/services/AiService'
+import { apiGetImages } from '@/services/AiServiceOrg'
 import type { GetImageResponse, Gallery, GelleryItem } from '../type'
 
 const Gallery = () => {

@@ -52,3 +52,10 @@ export async function apiGetPricingPlans<T>() {
         method: 'get',
     })
 }
+
+export async function apiGetSubscriptionDashboard<T>(companyId: string) {
+    return ApiService.fetchDataWithAxios<T>({
+        url: `/api/v1/Subscriptions/${companyId}/dashboard`,
+        method: 'get',
+    })
+}

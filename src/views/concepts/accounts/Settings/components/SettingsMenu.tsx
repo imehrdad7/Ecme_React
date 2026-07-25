@@ -18,6 +18,7 @@ const { MenuItem } = Menu
 const menuList: { label: string; value: View; icon: ReactNode }[] = [
     { label: 'پروفایل', value: 'profile', icon: <TbUserSquare /> },
     { label: 'شرکت', value: 'companySetting', icon: <TbBrandOffice /> },
+    { label: 'اشتراک من', value: 'SettingSubscription', icon: <TbFileDollar /> },
     { label: 'امنیت', value: 'security', icon: <TbLock /> },
     { label: 'اعلان', value: 'notification', icon: <TbBell /> },
     { label: 'صورتحساب', value: 'billing', icon: <TbFileDollar /> },

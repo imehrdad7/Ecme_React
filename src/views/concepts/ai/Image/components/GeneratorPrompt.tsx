@@ -14,7 +14,7 @@ import {
     lightingOptions,
     cameraOptions,
 } from '../utils'
-import { apiPostImages } from '@/services/AiService'
+import { apiPostImages } from '@/services/AiServiceOrg'
 import { LuImage } from 'react-icons/lu'
 import { ConfigsVariant, PostImageResponse } from '../type'
 
