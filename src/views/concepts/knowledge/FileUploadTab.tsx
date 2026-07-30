@@ -94,7 +94,6 @@ const FileUploadTab = ({ onSuccess }: Props) => {
     const companyId = user?.companyId || '';
 
     const handleSubmit = async () => {
-        debugger
         if (!file) return
 
         const formData = new FormData()

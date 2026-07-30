@@ -70,7 +70,6 @@ const KnowledgeList = ({ onAddClick }: KnowledgeListProps) => {
         try {
             const res = await apiGetKnowledgeDocuments<any>(companyId)
             const docs = Array.isArray(res) ? res : res?.data || []
-            debugger
             setDocuments(docs)
         } catch (error) {
             console.error("Failed to fetch documents", error)

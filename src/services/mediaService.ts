@@ -11,7 +11,6 @@ export async function apiUploadMedia(data: FormData) {
     return ApiService.fetchDataWithAxios<UploadMediaResponse>({
         url: `/api/v1/Media/Upload`,
         method: 'post',
-        // 🌟 دور زدن خطای تایپ‌اسکریپت برای ارسال FormData
         data: data as any, 
         headers: {
             'Content-Type': 'multipart/form-data'

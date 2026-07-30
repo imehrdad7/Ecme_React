@@ -4,3 +4,41 @@
 @import "./vendors/index.css";
 @import "./docs/index.css";
 @import "./tailwind/index.css";
+
+/* 🌟 اسکرول‌بار هوشمند و مخفی در حالت عادی */
+.hover-scrollbar {
+    /* برای فایرفاکس */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+/* برای مرورگرهای برپایه کروم، اج و سافاری */
+.hover-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.hover-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.hover-scrollbar::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 20px;
+}
+
+/* 🎯 وقتی موس میاد روی باکس، اسکرول‌بار ظاهر میشه */
+.hover-scrollbar:hover {
+    scrollbar-width: none;
+}
+
+.hover-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: #aeb0b2; /* رنگ طوسی روشن در تم لایت */
+}
+
+/* تم تاریک (Dark Mode) */
+.dark .hover-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: #334155; /* رنگ طوسی تیره در تم دارک */
+}

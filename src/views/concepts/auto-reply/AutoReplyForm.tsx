@@ -121,7 +121,6 @@ const getPlatformIconAndColors = (channel?: string) => {
     }
 }
 // این آدرس را بر اساس پورت بک‌اند خودت تنظیم کن (یا از فایل env. بخوان)
-debugger
 const backendBaseUrl = appConfig.apiPrefix; 
 
 const getFullMediaUrl = (url: string | File) => {
@@ -222,7 +221,6 @@ const AutoReplyForm = () => {
 
                     // مپ کردن پاسخ‌ها
                     if (ruleData.responses && ruleData.responses.length > 0) {
-                        debugger
                         setReplies(ruleData.responses.map((r: any) => ({
                             id: r.id,
                             type: REVERSE_REPLY_MAP[r.replyType] || 'text',
@@ -407,7 +405,6 @@ const AutoReplyForm = () => {
                 value: t.value,
                 type: TRIGGER_TYPE_MAP[t.matchType] || 2
             }))
-            debugger
             const payload = {
                 id: isEditMode ? id : undefined, // در صورت نیاز برای آپدیت
                 companyId:  user?.companyId||'',
@@ -698,7 +695,6 @@ const AutoReplyForm = () => {
                 )}
             </Card>
             {previewFile && (() => {
-                debugger
                 let fileSizeMB = '0.00';
                 if (previewFile.file) {
                     fileSizeMB = (previewFile.file.size / (1024 * 1024)).toFixed(2);

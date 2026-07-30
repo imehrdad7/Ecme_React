@@ -84,8 +84,6 @@ const SettingsCompany = () => {
     const onSubmit = async (values: CompanySchema) => {
         try {
             await sleep(500) 
-           
-            debugger
             const hasCompany = !!user?.companyId && user?.companyId !="00000000-0000-0000-0000-000000000000"
             if (hasCompany && user?.companyId) {
                 await apiUpdateCompany(user.companyId, { 

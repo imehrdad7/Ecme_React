@@ -147,7 +147,6 @@ const BotList = () => {
     const handleActivateBot = async (bot: BotResponse) => {
         setTogglingId(bot.id);
         try {
-            debugger
             await apiActivateBot(bot.id);
             
             setBots(prevBots => prevBots.map(b => b.id === bot.id ? { ...b, isActive: true } : b));

@@ -5,6 +5,7 @@ export type View =
     | 'billing'
     | 'integration'
     | 'companySetting'
+    | 'TeamManagement'
     | 'SettingSubscription'
 
 

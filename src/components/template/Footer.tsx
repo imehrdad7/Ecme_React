@@ -2,6 +2,7 @@ import Container from '@/components/shared/Container'
 import classNames from '@/utils/classNames'
 import { APP_NAME } from '@/constants/app.constant'
 import { PAGE_CONTAINER_GUTTER_X } from '@/constants/theme.constant'
+import { useLocation } from 'react-router-dom' // 👈 این هوک را ایمپورت کنید
 
 export type FooterPageContainerType = 'gutterless' | 'contained'
 
@@ -43,6 +44,20 @@ export default function Footer({
     pageContainerType = 'contained',
     className,
 }: FooterProps) {
+    // گرفتن مسیر فعلی
+    const location = useLocation()
+
+    // 👈 لیست مسیرهایی که فوتر نباید در آن‌ها نمایش داده شود (مثل صفحه چت شما)
+    const hiddenPaths = ['/concepts/inbox', '/chat']
+
+    // 👈 بررسی اینکه آیا مسیر فعلی کاربر شامل یکی از مسیرهای بالا هست یا خیر
+    const shouldHide = hiddenPaths.some(path => location.pathname.includes(path))
+
+    // اگر باید مخفی شود، کلا هیچی رندر نکن
+    if (shouldHide) {
+        return null
+    }
+
     return (
         <footer
             className={classNames(

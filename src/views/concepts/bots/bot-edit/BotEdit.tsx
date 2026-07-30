@@ -94,9 +94,7 @@ const BotEdit = () => {
             if (!id) return;
             try {
                 const result: any = await apiGetBot(id)
-                const data = result?.data || result; // بسته به خروجی axios
-debugger
-                // تنظیم پلتفرم برای رنگ‌آمیزی کارت (با فرض اینکه سرور platformName را برمی‌گرداند)
+                const data = result?.data || result;
                 if (data.platformName) {
                     setBotChannel(data.platformName)
                 }
