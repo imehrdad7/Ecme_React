@@ -14,7 +14,8 @@ type FormSchema = {
 }
 
 const validationSchema: ZodType<FormSchema> = z.object({
-    password: z.string().min(1, { message: 'رمز عبور الزامی است' }),
+    password: z.string().m
+    in(1, { message: 'رمز عبور الزامی است' }),
     confirmPassword: z.string().min(1, { message: 'تأیید رمز عبور الزامی است' }),
 }).refine((data) => data.password === data.confirmPassword, {
     message: 'رمز عبور مطابقت ندارد',

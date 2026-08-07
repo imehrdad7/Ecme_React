@@ -1,6 +1,5 @@
-
-import { FaTelegramPlane, FaWhatsapp, FaInstagram, FaGlobe ,FaCheck , FaCheckDouble} from 'react-icons/fa';
-import Avatar from '@/components/ui/Avatar';
+import { HiOutlineLockClosed } from 'react-icons/hi';
+import { FaTelegramPlane, FaWhatsapp, FaInstagram, FaGlobe } from 'react-icons/fa';
 import { Conversation } from '../types';
 
 interface Props {
@@ -8,30 +7,57 @@ interface Props {
         isAnsweredByBot?: boolean;
         isPrivateChat?: boolean;
         chatName?: string;
+        assigneeUserId?: string | null;
+        isRead?: boolean;
     };
     isSelected: boolean;
     onClick: () => void;
+    currentUserId?: string | null ;
 }
 
-const PlatformBadge = ({ platform }: { platform?: string }) => {
-    switch (platform?.toLowerCase()) {
+// 🌟 خلاقیت ۱: دریافت استایل‌های اختصاصی هر پلتفرم (رنگ، آیکون واترمارک)
+const getPlatformStyle = (platform?: string) => {
+    const pt = platform?.toLowerCase();
+    switch (pt) {
         case 'telegram':
-            return <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-50 text-blue-500 dark:bg-blue-500/10 dark:text-blue-400"><FaTelegramPlane size={13} /></div>;
+            return {
+                icon: FaTelegramPlane,
+                colorClass: 'bg-[#3390ec]',
+                textClass: 'text-[#3390ec]',
+                watermarkColor: 'text-[#3390ec]',
+                gradient: 'from-[#3390ec] to-[#277ac9]'
+            };
         case 'whatsapp':
-            return <div className="flex items-center justify-center w-6 h-6 rounded-full bg-green-50 text-green-500 dark:bg-green-500/10 dark:text-green-400"><FaWhatsapp size={13} /></div>;
+            return {
+                icon: FaWhatsapp,
+                colorClass: 'bg-[#25D366]',
+                textClass: 'text-[#25D366]',
+                watermarkColor: 'text-[#25D366]',
+                gradient: 'from-[#25D366] to-[#1da851]'
+            };
         case 'instagram':
-            return <div className="flex items-center justify-center w-6 h-6 rounded-full bg-pink-50 text-pink-500 dark:bg-pink-500/10 dark:text-pink-400"><FaInstagram size={13} /></div>;
+            return {
+                icon: FaInstagram,
+                colorClass: 'bg-[#E1306C]',
+                textClass: 'text-[#E1306C]',
+                watermarkColor: 'text-[#E1306C]',
+                gradient: 'from-[#E1306C] to-[#b32454]'
+            };
         default:
-            return <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"><FaGlobe size={13} /></div>;
+            return {
+                icon: FaGlobe,
+                colorClass: 'bg-gray-400',
+                textClass: 'text-gray-500',
+                watermarkColor: 'text-gray-400',
+                gradient: 'from-gray-500 to-gray-600'
+            };
     }
 };
 
 const formatSmartTime = (dateString?: string) => {
     if (!dateString) return '';
-    
     const messageDate = new Date(dateString);
     const today = new Date();
-    
     const timePart = messageDate.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
 
     const isToday = messageDate.getDate() === today.getDate() && 
@@ -46,102 +72,99 @@ const formatSmartTime = (dateString?: string) => {
     }
 };
 
-export const ConversationItem = ({ chat, isSelected, onClick }: Props) => {
-    const avatarLetter = chat.contactName ? chat.contactName.charAt(0) : '?';
+export const ConversationItem = ({ chat, isSelected, currentUserId, onClick }: Props) => {
     const lastMessageText = chat.lastMessage || 'پیامی ارسال نشده است...';
     const userName = chat.contactName || chat.contactPhoneNumber || 'کاربر ناشناس';
     const isGroup = chat.isPrivateChat === false;
-    const groupName = chat.chatName || 'گروه';
+    const groupName = chat.chatName || '';
     
-    
+    const isAssignedToOther = !!chat.assigneeUserId && chat.assigneeUserId !== currentUserId;
+    const isAssignedToMe = !!chat.assigneeUserId && chat.assigneeUserId === currentUserId;
+    const hasUnread = (chat.unreadCount ?? 0) > 0;
 
-   return (
-    <>
+    const platformStyle = getPlatformStyle(chat.platform);
+    const PlatformIcon = platformStyle.icon;
+
+    return (
         <button
             onClick={onClick}
-            className={`relative w-full text-right flex items-start gap-4 p-5 rounded-[24px] transition-all duration-300 border outline-none group ${
+            // استایل پایه: فاصله بیشتر، گوشه‌های گردتر، و حالت شیشه‌ای در لایت/دارک مود
+            className={`relative w-full text-left rtl:text-right flex flex-col justify-between p-4 min-h-[115px] mb-2.5 rounded-[22px] transition-all duration-300 outline-none group overflow-hidden ${          
                 isSelected
-                    ? 'bg-white dark:bg-gray-800 border-indigo-500 shadow-md shadow-indigo-500/10 ring-1 ring-indigo-500'
-                    : 'bg-white dark:bg-gray-800 border-transparent hover:border-gray-200 dark:hover:border-gray-700/80 shadow-sm hover:shadow-md'
+                    ? `bg-gradient-to-br ${platformStyle.gradient} shadow-lg shadow-${platformStyle.colorClass}/20 scale-[1.02] z-10 border-transparent`
+                    : 'bg-white dark:bg-[#1f2937]/60 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_-10px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 hover:shadow-md hover:-translate-y-0.5'
             }`}
         >
-            <div className="relative flex-shrink-0 mt-1">
-                <Avatar 
-                    size={64} // سایز آواتار بزرگتر شد تا با ارتفاع کارت هماهنگ شود
-                    shape="circle" 
-                    className={`${isSelected ? 'bg-indigo-600 text-white' : 'bg-indigo-50 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400'} font-black text-2xl transition-colors shadow-sm`}
-                >
-                    {avatarLetter}
-                </Avatar>
-                
-                {chat.status === 1 && (
-                    <div className="absolute bottom-0 right-1 w-4 h-4 bg-emerald-500 border-[3px] border-white dark:border-gray-800 rounded-full shadow-sm"></div>
-                )}
+            {/* 🌟 خلاقیت ۲: نوار رنگی هویت (Accent Bar) در حالت عادی */}
+            {!isSelected && (
+                <div className={`absolute top-0 right-0 w-1.5 h-full ${platformStyle.colorClass} opacity-80 rounded-r-[22px]`}></div>
+            )}
+
+            {/* 🌟 خلاقیت ۳: واترمارک بزرگ و محو لوگوی پلتفرم در بک‌گراند سمت چپ */}
+            <div className={`absolute -bottom-4 -left-3 transform -rotate-12 transition-opacity duration-300 pointer-events-none ${
+                isSelected 
+                ? 'opacity-[0.15] text-white scale-125' 
+                : `opacity-[0.04] dark:opacity-[0.03] ${platformStyle.watermarkColor} scale-150`
+            }`}>
+                <PlatformIcon size={90} />
             </div>
 
-            <div className="flex flex-col flex-1 min-w-0 h-full justify-between gap-3">
-                
-                {/* ردیف اول: نام + اطلاعات پلتفرم و زمان */}
-                <div className="flex justify-between items-start w-full">
-                    
-                    {/* محفظه ثابت برای نام (جلوگیری از پرش به خاطر انگلیسی/فارسی) */}
-                    <div className="flex-1 min-w-0 pl-2 text-right">
-                        {/* تگ bdi جادوی حل مشکل اسامی ترکیب‌شده است */}
-                        <bdi className="font-extrabold text-[16px] text-gray-900 dark:text-gray-100 block truncate">
+            {/* نشانگر آنلاین بودن (نقطه درخشان در کنار نام) */}
+            {chat.status === 1 && (
+                <div className="absolute top-5 right-5 w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] z-20"></div>
+            )}
+
+            {/* --- هدر کارت (نام کاربر + نام گروه) --- */}
+            <div className="relative z-10 flex justify-between items-start w-full pr-3">
+                <div className="flex flex-col items-start min-w-0 pr-1">
+                    {/* نام اصلی */}
+                    <div className="flex items-center gap-2">
+                        <bdi className={`font-black text-[16px] tracking-tight truncate ${isSelected ? 'text-white drop-shadow-sm' : 'text-gray-900 dark:text-gray-100'}`}>
                             {userName}
                         </bdi>
-
-                        {isGroup && groupName && (
-                            <div 
-                                dir="auto"
-                                className="flex items-center gap-1.5 mt-0.5 w-full overflow-hidden opacity-90"
-                                title={groupName}
-                            >
-                                <span className="text-[11px] text-gray-400 dark:text-gray-500 flex-shrink-0">
-                                    در
-                                </span>
-                                <span 
-                                    dir="auto"
-                                    className="text-[12px] font-bold text-slate-500 dark:text-slate-400 truncate"
-                                >
-                                    <bdi>{groupName}</bdi>
-                                </span>
-                            </div>
-                        )}
-
+                        {isAssignedToOther && <HiOutlineLockClosed className={`text-[13px] ${isSelected ? 'text-white/80' : 'text-red-500'}`} />}
+                        {isAssignedToMe && <HiOutlineLockClosed className={`text-[13px] ${isSelected ? 'text-white/80' : 'text-amber-500'}`} />}
                     </div>
                     
-
-                    {/* اطلاعات گوشه سمت چپ (آیکون پلتفرم + ساعت) */}
-                    <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                        {/* فرض کردم فیلد پلتفرم در آبجکت چت شما platform است. اگر نامش چیز دیگری است آن را اصلاح کنید */}
-                        <PlatformBadge platform={chat.platform || 'telegram'} /> 
-                        <span className={`text-[11px] font-bold ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'}`}>
-                            {formatSmartTime(chat.time || chat.createdAt)}
+                    {/* نام گروه (زیر نام اصلی با فونت ظریف‌تر) */}
+                    {isGroup && groupName && (
+                        <span className={`text-[11.5px] font-bold mt-0.5 truncate max-w-[150px] ${isSelected ? 'text-white/80' : platformStyle.textClass}`}>
+                            {groupName}
                         </span>
-                    </div>
-                </div>
-                
-                {/* ردیف دوم: آخرین پیام (در پایین‌ترین نقطه با فونت درشت‌تر) */}
-                <div className="flex justify-between items-end w-full">
-                    <span className={`text-[14px] leading-relaxed truncate pr-1 flex-1 text-right ${
-                        isSelected 
-                        ? 'text-gray-800 dark:text-gray-200 font-semibold' 
-                        : 'text-gray-600 dark:text-gray-400 font-medium'
-                    }`}>
-                        <bdi>{lastMessageText}</bdi>
-                    </span>
-                    
-                    {/* نشانگر پیام خوانده نشده */}
-                    {chat.unreadCount ? (
-                        <div className="flex flex-shrink-0 items-center justify-center min-w-[22px] h-[22px] px-1.5 bg-rose-500 text-white text-[11px] font-bold rounded-full ml-1 shadow-sm">
-                            {chat.unreadCount}
-                        </div>
-                    ) : null}
+                    )}
                 </div>
 
+                {/* بج تعداد پیام‌های نخوانده در بالا چپ */}
+                {hasUnread && (
+                    <div className={`flex items-center justify-center min-w-[20px] h-[20px] px-1.5 text-[11px] font-bold rounded-lg shadow-sm ${
+                        isSelected 
+                        ? 'bg-white/20 text-white backdrop-blur-md' 
+                        : `${platformStyle.colorClass} text-white`
+                    }`}>
+                        {chat.unreadCount}
+                    </div>
+                )}
+            </div>
+            
+            {/* --- بدنه پیام --- */}
+            <div className="relative z-10 mt-3 pr-3 w-full">
+                {/* پیام با قابلیت Line-clamp (نشان دادن حداکثر ۲ خط پیام) */}
+                <span className={`text-[13px] leading-snug line-clamp-2 ${isSelected ? 'text-white/95 font-medium' : hasUnread ? 'text-gray-800 dark:text-gray-200 font-semibold' : 'text-gray-500 dark:text-gray-400'}`}>
+                    <bdi>{lastMessageText}</bdi>
+                </span>
+            </div>
+
+            {/* --- فوتر (تاریخ در پایین سمت چپ) --- */}
+            <div className="relative z-10 flex justify-end items-end w-full mt-2">
+                {/* در RTL، justify-end عناصر را به سمت چپ هل می‌دهد */}
+                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md backdrop-blur-sm ${
+                    isSelected ? 'bg-white/10 text-white' : 'bg-gray-50/80 dark:bg-gray-800/50 text-gray-400 dark:text-gray-500'
+                }`}>
+                    <span className="text-[10px] font-black tracking-wider uppercase">
+                        {formatSmartTime(chat.time || chat.createdAt)}
+                    </span>
+                </div>
             </div>
         </button>
-    </>
     );
 };

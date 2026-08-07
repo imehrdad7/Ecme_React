@@ -1,3 +1,4 @@
+import { CannedResponse, Message } from '@/views/concepts/Inbox/types';
 import ApiService from './ApiService'
 
 // ۱. دریافت لیست مکالمات (صندوق پیام‌ها) با امکان جستجو، فیلتر (باز/بسته) و صفحه‌بندی
@@ -56,7 +57,20 @@ export async function apiMarkMessagesAsRead<T>(data: { conversationId: string; c
 export async function apiCloseConversation<T>(data: { conversationId: string; companyId: string }) {
     return ApiService.fetchDataWithAxios<T>({
         url: `/api/v1/conversations/${data.conversationId}/close`,
-        method: 'post',
+        method: 'patch',
+        data
+    })
+}
+
+export async function apiUnAssignConversation<T>(data: { 
+    conversationId: string; 
+    assigneeUserId: string; 
+    assignedByUserId: string; 
+    companyId: string 
+}) {
+    return ApiService.fetchDataWithAxios<T>({
+        url: `/api/v1/conversations/${data.conversationId}/unAssign`,
+        method: 'patch',
         data
     })
 }
@@ -79,17 +93,16 @@ export async function apiAssignConversation<T>(data: {
 }) {
     return ApiService.fetchDataWithAxios<T>({
         url: `/api/v1/conversations/${data.conversationId}/assign`,
-        method: 'post',
+        method: 'patch',
         data
     })
 }
 
 // ۸. دریافت جزئیات دقیق یک مکالمه (در صورت نیاز به نمایش در سایدبار)
-export async function apiGetConversationDetails<T>(conversationId: string, companyId: string) {
+export async function apiGetConversationDetails<T>(id: string) {
     return ApiService.fetchDataWithAxios<T>({
-        url: `/api/v1/conversations/${conversationId}`,
+        url: `/api/v1/conversations/${id}`,
         method: 'get',
-        params: { companyId }
     })
 }
 
@@ -112,5 +125,67 @@ export async function apiDeleteMedia(companyId: string, fileUrl: string) {
     return ApiService.fetchDataWithAxios({
         url: `/api/v1/Media/delete?companyId=${companyId}&fileUrl=${encodeURIComponent(fileUrl)}`,
         method: 'delete'
+    });
+}
+
+export async function apiGetCannedResponses(companyId: string) {
+    return ApiService.fetchDataWithAxios<CannedResponse[]>({
+        url: `/api/v1/conversations/CannedResponses?companyId=${companyId}`, 
+        method: 'get'
+    });
+}
+
+export async function apiCreateCannedResponse(data: { companyId: string, trigger: string, text: string }) {
+    return ApiService.fetchDataWithAxios({
+        url: `/api/v1/conversations/CannedResponses`,
+        method: 'post',
+        data: data
+    });
+}
+
+export async function apiUpdateCannedResponse(id: string, data: { companyId: string, id: string, trigger: string, text: string }) {
+    return ApiService.fetchDataWithAxios({
+        url: `/api/v1/conversations/CannedResponses/${id}`,
+        method: 'put',
+        data: data
+    });
+}
+
+export async function apiDeleteCannedResponse(id: string, companyId: string) {
+    return ApiService.fetchDataWithAxios({
+        url: `/api/v1/conversations/CannedResponses/${id}?companyId=${companyId}`,
+        method: 'delete'
+    });
+}
+
+export async function apiSearchMessages(
+    conversationId: string, 
+    searchTerm: string, 
+    pageNumber: number = 1, 
+    pageSize: number = 20
+) {
+    return ApiService.fetchDataWithAxios<{ items: Message[], totalCount: number }>({
+        url: `/api/v1/conversations/${conversationId}/messages/search`,
+        method: 'get',
+        params: {
+            searchTerm,
+            pageNumber,
+            pageSize
+        }
+    });
+}
+
+export async function apiGetMessageContext(
+    conversationId: string, 
+    messageId: string, 
+    contextSize: number = 20
+) {
+    // دقت کنید که خروجی این متد در بک‌اند یک آرایه خالص (List<MessageDto>) است
+    return ApiService.fetchDataWithAxios<Message[]>({
+        url: `/api/v1/conversations/${conversationId}/messages/${messageId}/context`,
+        method: 'get',
+        params: {
+            contextSize
+        }
     });
 }

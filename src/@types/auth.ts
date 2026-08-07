@@ -49,6 +49,14 @@ export type SignUpResult = {
     errors?: Record<string, string[]> 
 }
 
+export type Company = {
+    id: string;
+    name: string;
+    isActive: boolean;
+    autoGoodbyeMessage?: string; 
+}
+
+
 export type User = {
     id: string 
     avatarFileName?: string | null
@@ -61,6 +69,7 @@ export type User = {
     companyId?: string
     companyName?: string
     subscriptionEndDate?: string | null
+    company?: Company;
 }
 
 export type Token = {

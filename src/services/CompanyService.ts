@@ -29,6 +29,7 @@ type CompanyResponse = {
     id: string;
     name: string;
     isActive : boolean;
+    autoGoodbyeMessage?: string;
 };
 export async function apiGetCompany(id: string) {   
     return ApiService.fetchDataWithAxios<CompanyResponse>({
@@ -65,3 +66,11 @@ export async function apiDeactivateCompany(id: string) {
         method: 'patch'
     });
 }
+
+export const apiUpdateCompanySettings = async (data: { autoGoodbyeMessage: string }) => {
+    return ApiService.fetchDataWithAxios({
+        url: '/api/v1/Companies/settings',
+        method: 'put',
+        data
+    });
+};

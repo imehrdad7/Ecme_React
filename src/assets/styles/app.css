@@ -5,40 +5,24 @@
 @import "./docs/index.css";
 @import "./tailwind/index.css";
 
-/* 🌟 اسکرول‌بار هوشمند و مخفی در حالت عادی */
-.hover-scrollbar {
-    /* برای فایرفاکس */
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+
+/* اسکرول‌بار هوشمند (مخفی در حالت عادی، نمایان هنگام تعامل) */
+.auto-hide-scrollbar::-webkit-scrollbar {
+  width: 5px; /* عرض بسیار باریک و ظریف */
+  background-color: transparent;
 }
 
-/* برای مرورگرهای برپایه کروم، اج و سافاری */
-.hover-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+.auto-hide-scrollbar::-webkit-scrollbar-thumb {
+  background-color: transparent; /* در حالت عادی مخفی است */
+  border-radius: 10px;
 }
 
-.hover-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
+/* وقتی کاربر موس را روی لیست می‌آورد، اسکرول‌بار رنگ می‌گیرد */
+.auto-hide-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.6); /* رنگ طوسی ملایم */
 }
 
-.hover-scrollbar::-webkit-scrollbar-thumb {
-    background-color: transparent;
-    border-radius: 20px;
-}
-
-/* 🎯 وقتی موس میاد روی باکس، اسکرول‌بار ظاهر میشه */
-.hover-scrollbar:hover {
-    scrollbar-width: none;
-}
-
-.hover-scrollbar:hover::-webkit-scrollbar-thumb {
-    background-color: #aeb0b2; /* رنگ طوسی روشن در تم لایت */
-}
-
-/* تم تاریک (Dark Mode) */
-.dark .hover-scrollbar:hover::-webkit-scrollbar-thumb {
-    background-color: #334155; /* رنگ طوسی تیره در تم دارک */
+/* برای حالت دارک‌مود */
+.dark .auto-hide-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(75, 85, 99, 0.6);
 }

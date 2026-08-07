@@ -37,9 +37,9 @@ const extra = (
                     {
                         propName: 'oAuthSignIn',
                         type: `<code>(callback: (payload: {
-    onSignIn: (tokens: Token, user?: User) => void
-    redirect: () => void
-}) => void) => void</code>`,
+                            onSignIn: (tokens: Token, user?: User) => void
+                            redirect: () => void
+                        }) => void) => void</code>`,
                         default: `-`,
                         desc: 'Callback fuction after a single sign on',
                     },

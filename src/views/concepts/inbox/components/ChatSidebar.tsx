@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { HiOutlineSearch, HiOutlineInbox } from 'react-icons/hi';
-import Input from '@/components/ui/Input';
+import { HiOutlineSearch } from 'react-icons/hi';
 import { ConversationItem } from './ConversationItem';
 import { Conversation } from '../types';
 
@@ -16,6 +15,8 @@ interface Props {
     isLoadingMore?: boolean;
     hasMore?: boolean;
     onLoadMore?: () => void;
+    totalCount: number;
+    currentUserId?: string | null;
 }
 
 const PLATFORMS = [
@@ -37,7 +38,9 @@ export const ChatSidebar = ({
     isLoading = false,
     isLoadingMore = false,
     hasMore = false,
-    onLoadMore
+    onLoadMore,
+    totalCount,
+    currentUserId
 }: Props) => {
     
     const observerTarget = useRef<HTMLDivElement>(null);
@@ -64,60 +67,63 @@ export const ChatSidebar = ({
     }, [hasMore, isLoading, isLoadingMore, onLoadMore]);
 
     return (
-        <div className="w-full md:w-[340px] lg:w-[360px] h-full border-l border-gray-100 dark:border-gray-800/60 flex flex-col flex-shrink-0 bg-gray-50/30 dark:bg-[#0f172a]/20">
+        // 🌟 تغییر ۱: بک‌گراند کل سایدبار به سفید (bg-white) تغییر کرد
+        <div className="w-full md:w-[300px] h-[calc(100%-24px)] my-3 mr-3 rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-gray-800/60 overflow-hidden flex flex-col flex-shrink-0 bg-white dark:bg-[#1c242f] z-30 transition-all duration-300">
             
-            <div className="p-5 border-b border-gray-100 dark:border-gray-800/60 flex flex-col gap-5 bg-white dark:bg-gray-900/50 z-10 shadow-sm">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
-                            <HiOutlineInbox className="text-xl" />
-                        </div>
-                        گفتگوها
-                    </h3>
-                    <span className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-base font-bold px-3 py-1.5 rounded-full">
-                        {conversations.length}
-                    </span>
+            {/* هدر */}
+            <div className="px-3 pt-3 pb-1 flex flex-col gap-3 bg-white dark:bg-[#1c242f] z-10 border-b border-gray-100/50 dark:border-gray-800/50">
+                
+                <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center min-w-[36px] h-[36px] bg-[#3390ec]/10 dark:bg-[#8774e1]/15 text-[#3390ec] dark:text-[#8774e1] rounded-full text-xs font-bold px-2 shadow-sm border border-[#3390ec]/20 dark:border-[#8774e1]/20">
+                        {totalCount}
+                    </div>
+                    
+                    <div className="flex-1 relative flex items-center bg-[#f4f4f5] dark:bg-[#2b3643] rounded-full px-3 py-2 transition-colors focus-within:bg-white dark:focus-within:bg-[#212b36] focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500/50 border border-transparent">
+                        <HiOutlineSearch className="text-lg text-gray-400 min-w-[18px]" />
+                        <input 
+                            type="text"
+                            placeholder="جستجو در گفتگوها..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-transparent border-none outline-none px-2 text-[13.5px] text-gray-800 dark:text-gray-100 placeholder-gray-400 dir-auto"
+                        />
+                    </div>
                 </div>
                 
-                {/* 🌟 سایز Input بزرگتر شد */}
-                <Input
-                    size="md"
-                    placeholder="جستجوی مشتری..."
-                    prefix={<HiOutlineSearch className="text-xl text-gray-400" />}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-gray-100/80 dark:bg-gray-800 border-transparent rounded-xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
-                />
-
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none hide-scrollbar">
-                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none hide-scrollbar">
-                        {PLATFORMS.map((platform) => (
-                            <button
-                                key={platform.id}
-                                onClick={() => setSelectedPlatform(platform.id)}
-                                className={`whitespace-nowrap px-3 py-1.5 text-[11px] font-semibold rounded-full transition-colors ${
-                                    selectedPlatform === platform.id
-                                        ? 'bg-indigo-500 text-white shadow-sm'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                                }`}
-                            >
-                                {platform.label}
-                            </button>
-                        ))}
-                    </div>
+                <div className="flex items-center gap-1.5 auto pb-2 pt-1 auto-hide-scrollbar">
+                    {PLATFORMS.map((platform) => (
+                        <button
+                            key={platform.id}
+                            onClick={() => setSelectedPlatform(platform.id)}
+                            className={`whitespace-nowrap px-3 py-1 text-[12px] font-semibold rounded-full transition-all duration-200 ${
+                                selectedPlatform === platform.id
+                                    ? 'bg-[#3390ec] text-white dark:bg-[#8774e1]' 
+                                    : 'bg-transparent text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+                            }`}
+                        >
+                            {platform.label}
+                        </button>
+                    ))}
                 </div>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3 hover-scrollbar">
+            <div className="flex-1 overflow-y-auto flex flex-col pt-2 pr-2 pl-0 auto-hide-scrollbar">
                 
                 {isLoading && conversations.length === 0 ? (
-                    <div className="flex flex-col gap-3 p-1 animate-pulse">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                            <div key={i} className="flex gap-4 items-center bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50">
-                                <div className="w-14 h-14 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-                                <div className="flex-1">
-                                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-3"></div>
-                                    <div className="h-2 bg-gray-100 dark:bg-gray-700/50 rounded w-full"></div>
+                    <div className="flex flex-col animate-pulse">
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <div 
+                                key={i} 
+                                // 🌟 py-6 و min-h-[108px] اضافه شد تا دقیقاً هم‌سایز کارت‌های جدید شود
+                                className="flex flex-col justify-center px-3 py-6 min-h-[90px] mb-1 bg-white dark:bg-[#212b36] rounded-xl border border-gray-100/60 dark:border-white/5"
+                            >
+                                <div className="flex justify-between items-center w-full mb-2">
+                                    <div className="h-3.5 bg-gray-200 dark:bg-gray-800 rounded w-28"></div>
+                                    <div className="h-2.5 bg-gray-100 dark:bg-gray-800/50 rounded w-10"></div>
+                                </div>
+                                <div className="flex justify-between items-center w-full">
+                                    <div className="h-3 bg-gray-100 dark:bg-gray-800/50 rounded w-full max-w-[180px]"></div>
+                                    <div className="w-4 h-4 bg-gray-200 dark:bg-gray-800 rounded-full"></div>
                                 </div>
                             </div>
                         ))}
@@ -129,23 +135,20 @@ export const ChatSidebar = ({
                                 key={chat.id} 
                                 chat={chat} 
                                 isSelected={chat.id === activeChatId} 
+                                currentUserId={currentUserId}
                                 onClick={() => setActiveChatId(chat.id)} 
                             />
                         ))}
-
                         {isLoadingMore && (
-                            <div className="flex justify-center p-4">
-                                <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                            <div className="flex justify-center p-3">
+                                <div className="w-5 h-5 border-2 border-[#3390ec] dark:border-[#8774e1] border-t-transparent rounded-full animate-spin"></div>
                             </div>
                         )}
-                        <div ref={observerTarget} className="h-4 w-full"></div>
+                        <div ref={observerTarget} className="h-4 w-full flex-shrink-0"></div>
                     </>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-4 opacity-60">
-                        <div className="w-20 h-20 rounded-3xl bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center">
-                            <HiOutlineSearch className="text-4xl text-gray-300" />
-                        </div>
-                        <span className="text-sm font-semibold">مکالمه‌ای یافت نشد.</span>
+                        <span className="text-[13px] font-medium">گفتگویی یافت نشد.</span>
                     </div>
                 )}
             </div>

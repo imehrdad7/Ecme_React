@@ -7,7 +7,7 @@ import useResponsive from '@/utils/hooks/useResponsive'
 import { useSettingsStore } from './store/settingsStore'
 
 const Profile = lazy(() => import('./components/SettingsProfile'))
-const SettingsCompany = lazy(() => import('./components/SettingsCompany'))
+const SettingsCompany = lazy(() => import('./components/Company/SettingsCompany'))
 const SettingSubscription = lazy(() => import('./components/SettingSubscription'))
 const TeamManagement = lazy(() => import('./components/Team/TeamManagement'))
 const Security = lazy(() => import('./components/SettingsSecurity'))

@@ -4,14 +4,15 @@ import {
     HiOutlineClock,
     HiOutlineAtSymbol,
     HiOutlineHashtag,
-    HiCheckCircle
+    HiOutlineX
 } from 'react-icons/hi';
-import Avatar from '@/components/ui/Avatar';
+// 🌟 Avatar ایمپورت نمی‌شود چون حذف شد
 import Tag from '@/components/ui/Tag';
 import { Conversation } from '../types';
 
 interface Props {
     activeChat?: Conversation;
+    onClose?: () => void;
 }
 
 const formatDateTime = (dateString?: string) => {
@@ -26,126 +27,131 @@ const formatDateTime = (dateString?: string) => {
     });
 };
 
-export const ContactDetails = ({ activeChat }: Props) => {
+export const ContactDetails = ({ activeChat, onClose }: Props) => {
     if (!activeChat) return null;
 
-    const avatarLetter = activeChat.contactName ? activeChat.contactName.charAt(0) : '?';
     const displayName = activeChat.contactName || 'کاربر ناشناس';
     const displayPhone = activeChat.contactPhoneNumber || 'ثبت نشده';
     const ContactUserNameInPlatform = activeChat.contactUserNameInPlatform || 'ثبت نشده';
     const isOpen = activeChat.status === 1;
 
     return (
-        // عرض و ارتفاع رو w-full h-full دادیم چون Inbox خودش عرض رو کنترل می‌کنه
-        <div className="w-full h-full bg-gray-50/50 dark:bg-[#0f172a]/30 flex flex-col overflow-y-auto scrollbar-hide">
+        // 🌟 کلید اصلی: استفاده از overflow-hidden برای جلوگیری ۱۰۰ درصدی از اسکرول
+        <div className="w-full h-full bg-white dark:bg-[#1c242f] flex flex-col overflow-hidden">
             
-            {/* ۱. بخش هدر پروفایل (با گرادیانت ملایم در پس‌زمینه) */}
-            <div className="relative flex flex-col items-center pt-10 pb-6 px-4 bg-gradient-to-b from-indigo-50/50 to-transparent dark:from-indigo-900/10">
-                <div className="relative group cursor-pointer">
-                    <Avatar 
-                        size={88} 
-                        shape="circle" 
-                        className="bg-gradient-to-tr from-indigo-500 to-purple-500 text-white font-black text-3xl shadow-xl shadow-indigo-500/20 ring-4 ring-white dark:ring-gray-900 transition-transform duration-300 group-hover:scale-105"
+            {/* --- هدر بسیار فشرده و مدرن --- */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800/60 bg-gray-50/50 dark:bg-[#212b36]/30 flex-shrink-0">
+                <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                        <h2 className="font-black text-gray-900 dark:text-white text-[16px] tracking-tight">
+                            {displayName}
+                        </h2>
+                        {/* نشانگر آنلاین بودن در کنار نام */}
+                        <div className={`w-2 h-2 rounded-full shadow-sm flex-shrink-0 ${
+                            isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'
+                        }`}></div>
+                    </div>
+                    <span className={`text-[11.5px] font-bold mt-0.5 ${
+                        isOpen ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500'
+                    }`}>
+                        {isOpen ? 'مکالمه در جریان' : 'مکالمه پایان یافته'}
+                    </span>
+                </div>
+                
+                {onClose && (
+                    <button 
+                        onClick={onClose}
+                        className="p-2 rounded-[12px] bg-white dark:bg-[#1c242f] border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 shadow-sm transition-all"
+                        title="بستن اطلاعات"
                     >
-                        {avatarLetter}
-                    </Avatar>
-                    
-                    {/* نقطه وضعیت (Status Dot) چسبیده به آواتار */}
-                    <div className={`absolute bottom-1 right-1 w-5 h-5 rounded-full border-[3px] border-white dark:border-gray-900 shadow-sm ${
-                        isOpen ? 'bg-emerald-500' : 'bg-gray-400'
-                    }`}></div>
-                </div>
-                
-                <h2 className="font-black text-gray-900 dark:text-white text-lg mt-4 mb-1 text-center tracking-tight">
-                    {displayName}
-                </h2>
-                
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
-                    {isOpen ? (
-                        <><HiCheckCircle className="text-emerald-500 text-sm" /> مکالمه در جریان</>
-                    ) : (
-                        <span className="text-gray-400">مکالمه پایان یافته</span>
-                    )}
-                </div>
+                        <HiOutlineX className="text-lg" />
+                    </button>
+                )}
             </div>
 
-            <div className="px-4 pb-8 flex flex-col gap-4">
+            {/* --- محتوای اصلی --- */}
+            {/* استفاده از flex-1 و overflow-hidden تا فضا را پر کند اما اسکرول نشود */}
+            <div className="flex flex-col gap-3 p-4 flex-1 overflow-hidden">
                 
-                {/* ۲. کارت اطلاعات نشست (Apple Settings Style) */}
-                <div className="bg-white dark:bg-gray-800/80 backdrop-blur-md rounded-[24px] p-2 shadow-sm border border-gray-100 dark:border-gray-700/50">
+                {/* ۱. کارت اطلاعات نشست - فاصله‌ها فشرده‌تر شده‌اند */}
+                <div className="bg-gray-50/80 dark:bg-[#212b36]/80 rounded-[20px] p-1.5 border border-gray-100 dark:border-white/5 flex-shrink-0">
                     
                     {/* ردیف شماره تماس */}
-                    <div className="flex items-center justify-between p-3 group">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 flex items-center justify-center transition-transform group-hover:scale-110">
-                                <HiOutlinePhone className="text-lg" />
+                    <div className="flex items-center justify-between p-2.5 rounded-[14px] hover:bg-white dark:hover:bg-white/5 transition-colors group">
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm">
+                                <HiOutlinePhone className="text-[16px]" />
                             </div>
-                            <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">شماره تماس</span>
+                            <span className="text-[12px] font-bold text-gray-700 dark:text-gray-300">شماره تماس</span>
                         </div>
-                        <span className="text-sm font-bold text-gray-900 dark:text-white font-mono tracking-wider" dir="ltr">
+                        <span className="text-[13px] font-black text-gray-900 dark:text-white font-mono tracking-wider" dir="ltr">
                             {displayPhone}
                         </span>
                     </div>
 
-                    <div className="h-[1px] w-[calc(100%-3.5rem)] ml-auto bg-gray-50 dark:bg-gray-700/30 my-1"></div>
+                    <div className="h-[1px] w-[calc(100%-3rem)] mx-auto bg-gray-200/50 dark:bg-gray-700/50 my-0.5"></div>
 
                     {/* ردیف نام کاربری */}
-                    <div className="flex items-center justify-between p-3 group">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-2xl bg-purple-50 dark:bg-purple-500/10 text-purple-500 flex items-center justify-center transition-transform group-hover:scale-110">
-                                <HiOutlineAtSymbol className="text-lg" />
+                    <div className="flex items-center justify-between p-2.5 rounded-[14px] hover:bg-white dark:hover:bg-white/5 transition-colors group">
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-600 flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm">
+                                <HiOutlineAtSymbol className="text-[16px]" />
                             </div>
-                            <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">نام کاربری</span>
+                            <span className="text-[12px] font-bold text-gray-700 dark:text-gray-300">نام کاربری</span>
                         </div>
-                        <span className="text-sm font-bold text-gray-900 dark:text-white font-mono">
+                        <span className="text-[12px] font-bold text-gray-900 dark:text-white font-mono">
                             {ContactUserNameInPlatform}
                         </span>
                     </div>
 
-                    <div className="h-[1px] w-[calc(100%-3.5rem)] ml-auto bg-gray-50 dark:bg-gray-700/30 my-1"></div>
+                    <div className="h-[1px] w-[calc(100%-3rem)] mx-auto bg-gray-200/50 dark:bg-gray-700/50 my-0.5"></div>
 
                     {/* ردیف تاریخ شروع */}
-                    <div className="flex items-center justify-between p-3 group">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-500/10 text-blue-500 flex items-center justify-center transition-transform group-hover:scale-110">
-                                <HiOutlineClock className="text-lg" />
+                    <div className="flex items-center justify-between p-2.5 rounded-[14px] hover:bg-white dark:hover:bg-white/5 transition-colors group">
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600 flex items-center justify-center transition-transform group-hover:scale-110 shadow-sm">
+                                <HiOutlineClock className="text-[16px]" />
                             </div>
-                            <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">شروع چت</span>
+                            <span className="text-[12px] font-bold text-gray-700 dark:text-gray-300">شروع گفتگو</span>
                         </div>
-                        <span className="text-sm font-bold text-gray-900 dark:text-white">
+                        <span className="text-[11px] font-bold text-gray-900 dark:text-white">
                             {formatDateTime(activeChat.createdAt)}
                         </span>
                     </div>
                 </div>
 
-                {/* ۳. کارت تگ‌های مشتری */}
-                <div className="bg-white dark:bg-gray-800/80 backdrop-blur-md rounded-[24px] p-5 shadow-sm border border-gray-100 dark:border-gray-700/50">
-                    <div className="flex items-center gap-2 mb-4">
-                        <HiOutlineHashtag className="text-lg text-indigo-500" />
-                        <h3 className="text-sm font-extrabold text-gray-800 dark:text-white">تگ‌های مشتری</h3>
+                {/* ۲. کارت تگ‌ها */}
+                {/* flex-1 باعث می‌شود تگ‌ها هرچقدر جا بود کِش بیایند اما overflow-hidden جلوی اسکرول را می‌گیرد */}
+                <div className="bg-gray-50/80 dark:bg-[#212b36]/80 rounded-[20px] p-4 border border-gray-100 dark:border-white/5 flex flex-col flex-1 overflow-hidden">
+                    <div className="flex items-center gap-2 mb-3 flex-shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 flex items-center justify-center shadow-sm">
+                            <HiOutlineHashtag className="text-[15px]" />
+                        </div>
+                        <h3 className="text-[13px] font-black text-gray-800 dark:text-white">تگ‌های مشتری</h3>
                     </div>
                     
-                    <div className="flex flex-wrap gap-2">
+                    {/* محتوای تگ‌ها: استفاده از content-start برای چینش از بالا و پنهان کردن موارد اضافی */}
+                    <div className="flex flex-wrap content-start gap-1.5 flex-1 overflow-hidden">
                         {activeChat.tags && activeChat.tags.length > 0 ? (
                             activeChat.tags.map((tag: any, index: number) => {
                                 const tagName = typeof tag === 'string' ? tag : (tag.name || tag.title || 'تگ نامشخص');
                                 const tagClasses = typeof tag === 'object' && (tag.color || tag.colorHex) 
                                     ? (tag.color || tag.colorHex) 
-                                    : 'bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20';
+                                    : 'bg-white dark:bg-[#1c242f] text-indigo-600 dark:text-indigo-400 border border-gray-200 dark:border-gray-700 shadow-sm';
 
                                 return (
                                     <Tag 
                                         key={index} 
-                                        className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all hover:scale-105 cursor-default ${tagClasses}`}
+                                        className={`px-2.5 py-1 text-[10.5px] font-extrabold rounded-[8px] transition-all hover:scale-105 cursor-default ${tagClasses}`}
                                     >
                                         {tagName}
                                     </Tag>
                                 );
                             })
                         ) : (
-                            <div className="w-full py-4 text-center rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-dashed border-gray-200 dark:border-gray-700">
-                                <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
-                                    بدون تگ
+                            <div className="w-full h-full min-h-[60px] flex items-center justify-center rounded-[14px] bg-white/50 dark:bg-[#1c242f]/50 border border-dashed border-gray-300 dark:border-gray-700">
+                                <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500">
+                                    تگی برای این کاربر ثبت نشده است.
                                 </span>
                             </div>
                         )}

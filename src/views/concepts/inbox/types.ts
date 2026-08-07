@@ -16,6 +16,7 @@ export type Conversation = {
     chatName?: string;
     tags?: { id: string; title: string; color?: string }[];
     contactUserNameInPlatform: string;
+    lastMessageDate?: string;
 };
 
 // انطباق یافته با MessageDto در بک‌اند
@@ -45,3 +46,9 @@ export type SendMessagePayload = {
     textContent?: string;
     mediaUrl?: string;
 };
+
+export type CannedResponse = {
+    id: string;
+    trigger: string;
+    text: string;
+}

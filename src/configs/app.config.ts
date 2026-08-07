@@ -8,7 +8,8 @@ export type AppConfig = {
 }
 
 const appConfig: AppConfig = {
-  apiPrefix: 'http://192.168.1.24:5172', // اسلش اضافه حذف و پورت صحیح جایگزین شد
+  apiPrefix: 'http://192.168.1.24:5172',
+  //apiPrefix: 'http://172.18.0.1:5172',
   authenticatedEntryPath: '/concepts/Dashboard',
   unAuthenticatedEntryPath: '/sign-in',
   accessTokenPersistStrategy: 'localStorage',
