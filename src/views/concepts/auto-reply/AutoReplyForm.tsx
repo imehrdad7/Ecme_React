@@ -136,7 +136,7 @@ const AutoReplyForm = () => {
     const { id } = useParams() 
     const location = useLocation()
     const isEditMode = Boolean(id)
-    const { user, setUser } = useSessionUser() 
+    const { user } = useSessionUser() 
     const passedState = location.state as { botPlatform?: string, botName?: string } | null;
 
     const [isLoading, setIsLoading] = useState<boolean>(isEditMode)

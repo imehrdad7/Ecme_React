@@ -2,7 +2,7 @@ import Container from '@/components/shared/Container'
 import classNames from '@/utils/classNames'
 import { APP_NAME } from '@/constants/app.constant'
 import { PAGE_CONTAINER_GUTTER_X } from '@/constants/theme.constant'
-import { useLocation } from 'react-router-dom' // 👈 این هوک را ایمپورت کنید
+import { useLocation } from 'react-router-dom'
 
 export type FooterPageContainerType = 'gutterless' | 'contained'
 
@@ -16,8 +16,7 @@ const FooterContent = () => {
         <div className="flex items-center justify-between flex-auto w-full">
             <span>
                 کپی رایت &copy; {`${new Date().getFullYear()}`}{' '}
-                <span className="font-semibold">{`${APP_NAME}`}</span> همه
-                حقوق محفوظ است.
+                <span className="font-semibold">{`${APP_NAME}`}</span> همه حقوق محفوظ است.
             </span>
             <div className="">
                 <a
@@ -44,16 +43,26 @@ export default function Footer({
     pageContainerType = 'contained',
     className,
 }: FooterProps) {
-    // گرفتن مسیر فعلی
     const location = useLocation()
 
-    // 👈 لیست مسیرهایی که فوتر نباید در آن‌ها نمایش داده شود (مثل صفحه چت شما)
-    const hiddenPaths = ['/concepts/inbox', '/chat']
+    // 🌟 لیست هوشمند آدرس‌هایی که فوتر نباید در آن‌ها نمایش داده شود
+    const hiddenPaths = [
+        // ۱. آدرس‌های کاملاً ثابت (دقت کنید که بین /^ و $/ قرار می‌گیرند)
+        /^\/concepts\/inbox$/,
+        /^\/chat$/,
+        
+        // ۲. آدرس‌های داینامیک (بخش متغیر با [a-zA-Z0-9-]+ جایگزین شده است)
+        // این الگو آدرسِ کانتکت‌های هر کمپینی با هر آیدی‌ای را مخفی می‌کند:
+        /^\/concepts\/campaigns\/[a-zA-Z0-9-]+\/contacts\/?$/,
 
-    // 👈 بررسی اینکه آیا مسیر فعلی کاربر شامل یکی از مسیرهای بالا هست یا خیر
-    const shouldHide = hiddenPaths.some(path => location.pathname.includes(path))
+        // 💡 راهنمای اضافه کردن در آینده:
+        // اگر خواستید صفحه ویرایشِ کمپین را هم مخفی کنید این را اضافه می‌کنید:
+        // /^\/concepts\/campaigns\/[a-zA-Z0-9-]+\/edit\/?$/,
+    ]
 
-    // اگر باید مخفی شود، کلا هیچی رندر نکن
+    // 👈 بررسی اینکه آیا مسیر فعلی با حداقل یکی از الگوهای بالا همخوانی دارد یا خیر
+    const shouldHide = hiddenPaths.some(pattern => pattern.test(location.pathname))
+
     if (shouldHide) {
         return null
     }

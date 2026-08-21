@@ -65,10 +65,34 @@ const conceptsRoute: Routes = [
         authority: [ADMIN, USER],
     },
     {
-        key: 'concepts.CampaignBuilder',
-        path: '/concepts/CampaignBuilder',
-        component: lazy(() => import('@/views/concepts/campaigns/CampaignBuilder')),
+        key: 'concepts.CampaignList',
+        path: '/concepts/CampaignList',
+        component: lazy(() => import('@/views/concepts/campaigns/CampaignList')),
         authority: [ADMIN, USER],
+    },
+    {
+        key: 'campaigns-create',
+        path: '/concepts/campaigns/create',
+        component: lazy(() => import('@/views/concepts/campaigns/CampaignForm')),
+        authority: [],
+    },
+    {
+        key: 'campaigns-edit', // حتماً key متفاوت باشد
+        path: '/concepts/campaigns/:id/edit', // پارامتر id در آدرس
+        component: lazy(() => import('@/views/concepts/campaigns/CampaignForm')), // دقیقاً همان فرم لود می‌شود
+        authority: [],
+    },
+    {
+        key: 'campaigns-contacts',
+        path: '/concepts/campaigns/:campaignId/contacts',
+        component: lazy(() => import('@/views/concepts/campaigns/CampaignContacts')),
+        authority: [], 
+    },
+    {
+        key: 'campaigns-Report',
+        path: '/concepts/campaigns/:campaignId/report',
+        component: lazy(() => import('@/views/concepts/campaigns/CampaignReport')),
+        authority: [], 
     },
     {
         key: 'concepts.crm',

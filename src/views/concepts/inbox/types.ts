@@ -35,6 +35,8 @@ export type Message = {
     senderUserId?: string;
     senderName?: string;
     createdAt: string;
+    replyToMessageId?: string;
+    replyToMessageText?: string;
 };
 
 // مدل ورودی برای ارسال پیام منطبق با SendOutgoingMessageCommand
@@ -45,6 +47,7 @@ export type SendMessagePayload = {
     messageType: number;
     textContent?: string;
     mediaUrl?: string;
+    replyToMessageId?: string;
 };
 
 export type CannedResponse = {

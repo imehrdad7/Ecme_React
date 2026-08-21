@@ -216,6 +216,21 @@ export const MessageBubble = ({ message, currentUserId, onResend, onDelete, isFi
                     {/* === حباب پیام === */}
                     <div className={`relative ${isJumboEmoji ? '' : `p-2.5 ${bubbleStyle}`} ${isOutgoing ? 'ltr:order-2 rtl:order-1' : 'ltr:order-1 rtl:order-2'}`}>
                         
+                        {message.replyToMessageId && (
+                            <div className={`mb-2 px-2.5 py-1.5 rounded-lg text-[11px] border-l-2 rtl:border-l-0 rtl:border-r-2 ${
+                                isOutgoing 
+                                    ? 'bg-black/5 dark:bg-white/10 border-indigo-500 text-gray-700 dark:text-gray-200' 
+                                    : 'bg-black/5 dark:bg-white/10 border-emerald-500 text-gray-700 dark:text-gray-200'
+                            }`}>
+                                <span className={`font-black opacity-80 block mb-0.5 ${isOutgoing ? 'text-indigo-600 dark:text-indigo-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                                    پاسخ به پیام
+                                </span>
+                                <span className="truncate block opacity-70 line-clamp-1 leading-relaxed text-[10px]">
+                                    {message.replyToMessageText || 'مشاهده متن پیام مرجع...'}
+                                </span>
+                            </div>
+                        )}
+
                         {isLastInGroup && isOutgoing && !isJumboEmoji && (
                             <svg className={`absolute bottom-0 -right-[8px] ${isBot ? 'text-[#f0f4f9] dark:text-indigo-900/60' : 'text-[#e3ffc8] dark:text-[#2b5278]'}`} width="9" height="16" viewBox="0 0 9 16" fill="currentColor">
                                 <path d="M0 0C0 8 4 12 9 16L0 16Z" />
@@ -277,7 +292,21 @@ export const MessageBubble = ({ message, currentUserId, onResend, onDelete, isFi
                             </span>
                             {isOutgoing && (
                                 <span className={`text-[11px] ${isJumboEmoji ? 'text-gray-500 dark:text-gray-300' : ''}`}>
-                                    {message.status === 4 ? '✓✓' : message.status >= 2 ? '✓' : '🕒'}
+                                    {message.status === 1 && (
+                                        <span className="text-gray-400 text-[10px]">🕐</span>
+                                    )}
+                                    {message.status === 2 && (
+                                        <span className="text-gray-400 font-bold">✓</span>
+                                    )}
+                                    {message.status === 3 && (
+                                        <span className="text-gray-400 font-bold">✓✓</span>
+                                    )}
+                                    {message.status === 4 && (
+                                        <span className="text-blue-500 font-bold drop-shadow-sm">✓✓</span>
+                                    )}
+                                    {message.status === 0 && (
+                                        <span className="text-red-500 text-[10px]">❌</span>
+                                    )}
                                 </span>
                             )}
                         </div>

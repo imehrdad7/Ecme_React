@@ -1,80 +1,87 @@
 import { useEffect, useState, useRef } from 'react';
-import * as signalR from '@microsoft/signalr';
-import appConfig from '@/configs/app.config';
-
+import { socketManager } from '@/utils/socketManager';
 import { Message } from '../../views/concepts/inbox/types';
 
 interface UseChatSocketProps {
     token: string | null;
     onNewMessage: (message: Message) => void;
+    onMessageUpdated?: (message: Message) => void;
     onConversationUpdated?: (chatId: string, action: string, assigneeUserId?: string) => void;
     onCannedResponsesUpdated?: () => void;
 }
     
-
-export const useChatSocket = ({ token, onNewMessage, onConversationUpdated, onCannedResponsesUpdated }: UseChatSocketProps) => {
+export const useChatSocket = ({ token, onNewMessage, onConversationUpdated, onCannedResponsesUpdated, onMessageUpdated }: UseChatSocketProps) => {
     const [isConnected, setIsConnected] = useState(false);
     
     const onNewMessageRef = useRef(onNewMessage);
     const onConversationUpdatedRef = useRef(onConversationUpdated);
     const onCannedResponsesUpdatedRef = useRef(onCannedResponsesUpdated);
+    const onMessageUpdatedRef = useRef(onMessageUpdated);
 
     useEffect(() => {
         onNewMessageRef.current = onNewMessage;
         onConversationUpdatedRef.current = onConversationUpdated;
         onCannedResponsesUpdatedRef.current = onCannedResponsesUpdated;
-    }, [onNewMessage, onConversationUpdated]);
+        onMessageUpdatedRef.current = onMessageUpdated;
+    }, [onNewMessage, onConversationUpdated, onCannedResponsesUpdated, onMessageUpdated]);
 
     useEffect(() => {
         if (!token) return;
 
-        // ۱. ساخت کانکشن با تنظیمات حرفه‌ای
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl(`${appConfig.apiPrefix}/hubs/chat`, {
-                accessTokenFactory: () => token 
-            })
-            .withAutomaticReconnect([0, 2000, 5000, 10000, 30000]) // تلاش مجدد در صورت قطعی اینترنت
-            .configureLogging(signalR.LogLevel.Trace)
-            .build();
+        let isMounted = true;
 
-        // ۲. تعریف لیسنرها (شنونده‌ها) قبل از شروع اتصال
-        connection.on("ReceiveNewMessage", (message: Message) => {
+        const handleReceiveNewMessage = (message: Message) => {
             console.log("پیام جدید از سوکت دریافت شد:", message);
-            onNewMessageRef.current(message);
-        });
+            if (onNewMessageRef.current) onNewMessageRef.current(message);
+        };
+        const handleConversationUpdated = (conversationId: string, action: string, assigneeUserId?: string) => {
+            if (onConversationUpdatedRef.current) onConversationUpdatedRef.current(conversationId, action, assigneeUserId);
+        };
 
-        connection.on("ConversationUpdated", (conversationId: string, action: string, assigneeUserId?: string) => {
-            if (onConversationUpdatedRef.current) {
-                // 👈 پارامتر سوم در اینجا پاس داده می‌شود
-                onConversationUpdatedRef.current(conversationId, action, assigneeUserId);
-            }
-        });
+        const handleCannedResponsesUpdated = () => {
+            console.log("⚡ درخواست آپدیت لیست پاسخ‌های آماده دریافت شد");
+            if (onCannedResponsesUpdatedRef.current) onCannedResponsesUpdatedRef.current();
+        };
 
-        connection.on("OnCannedResponsesUpdated", () => {
-            if (onCannedResponsesUpdatedRef.current) {
-                console.log("⚡ درخواست آپدیت لیست پاسخ‌های آماده دریافت شد");
-                onCannedResponsesUpdatedRef.current();
-            }
-        });
+        const handleMessageUpdated = (updatedMessage: Message) => {
+            console.log("⚡ وضعیت پیام آپدیت شد:", updatedMessage);
+            if (onMessageUpdatedRef.current) onMessageUpdatedRef.current(updatedMessage);
+        };
 
-        // ۳. استارت کردن اتصال
         const startConnection = async () => {
             try {
-                await connection.start();
-                setIsConnected(true);
-                console.log("⚡ به سرور SignalR متصل شد!");
+                // ۱. دریافت اتصال از طریق منیجر مرکزی به جای ساخت اتصال جدید
+                const connection = await socketManager.connect(token);
+                
+                if (!connection || !isMounted) return;
+
+                setIsConnected(connection.state === 'Connected');
+
+                connection.on("ReceiveNewMessage", handleReceiveNewMessage);
+                connection.on("ConversationUpdated", handleConversationUpdated);
+                connection.on("OnCannedResponsesUpdated", handleCannedResponsesUpdated);
+                connection.on("MessageUpdated", handleMessageUpdated);
+
             } catch (error) {
-                console.error("خطا در اتصال به سوکت:", error);
+                console.error("خطا در برقراری ارتباط با مدیر سوکت چت:", error);
+                setIsConnected(false);
             }
         };
 
         startConnection();
 
-        // ۴. تمیزکاری (Cleanup) موقع خارج شدن کاربر از صفحه چت
+        // ۳. تمیزکاری (Cleanup) موقع خارج شدن کاربر از صفحه چت
         return () => {
-            connection.stop().then(() => setIsConnected(false));
+            isMounted = false;
+            const connection = socketManager.getConnection();
+            if (connection) {
+               connection.off("ReceiveNewMessage", handleReceiveNewMessage);
+                connection.off("ConversationUpdated", handleConversationUpdated);
+                connection.off("OnCannedResponsesUpdated", handleCannedResponsesUpdated);
+                connection.off("MessageUpdated", handleMessageUpdated);
+            }
         };
-    }, [token]); // این هوک فقط زمانی دوباره اجرا می‌شود که توکن تغییر کند
+    }, [token]); 
 
     return { isConnected };
 };

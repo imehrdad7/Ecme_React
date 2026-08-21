@@ -1,4 +1,5 @@
-import ApiService from './ApiService' // مسیر را بر اساس پوشه‌بندی خود تنظیم کنید
+import ApiService from './ApiService'
+import qs from 'qs'
 
 
 export type GetContactsParams =  {
@@ -7,6 +8,7 @@ export type GetContactsParams =  {
     PhoneNumber?: string;
     PlatformFilter?: number;
     TagFilter?: string;
+    TagIdsFilter?: string[];
     Page?: number;
     PageSize?: number;
 };
@@ -16,7 +18,8 @@ export async function apiGetContacts<T>(params: GetContactsParams) {
         return ApiService.fetchDataWithAxios<T>({
         url: '/api/v1/Contacts',
         method: 'get',
-        params
+        params,
+        paramsSerializer: params => qs.stringify(params, { arrayFormat: 'repeat' })
     })
 }
 

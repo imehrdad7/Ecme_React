@@ -53,6 +53,13 @@ export async function apiMarkMessagesAsRead<T>(data: { conversationId: string; c
     })
 }
 
+export async function apiDeleteMessage<T>(messageId: string) {
+    return ApiService.fetchDataWithAxios<T>({
+        url: `/api/v1/messages/${messageId}`, 
+        method: 'delete'
+    });
+}
+
 // ۵. بستن یک مکالمه
 export async function apiCloseConversation<T>(data: { conversationId: string; companyId: string }) {
     return ApiService.fetchDataWithAxios<T>({

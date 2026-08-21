@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useChatState } from './hooks/useChatState';
 import { ChatSidebar } from './components/ChatSidebar';
 import { ChatArea } from './components/ChatArea';
@@ -8,8 +8,17 @@ import { useSessionUser } from '@/store/authStore';
 const Inbox = () => {
     const { user } = useSessionUser();
     const currentUserId = user?.id; 
-    const [isInfoOpen, setIsInfoOpen] = useState(false);
 
+    useEffect(() => {
+        if (typeof window !== 'undefined' && 'Notification' in window) {
+            if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+                Notification.requestPermission();
+            }
+        }
+    }, []);
+
+    const [isInfoOpen, setIsInfoOpen] = useState(false);
+    
     const {
         conversations,
         activeChat,
@@ -35,7 +44,7 @@ const Inbox = () => {
         handleEndConversation,
         setPage ,
     } = useChatState();
-
+    
     return (
         <div className="relative flex h-[calc(100vh-120px)] w-full bg-[#f4f4f5] dark:bg-[#0f172a] rounded-[2rem] overflow-hidden animate-[fadeIn_0.3s_ease-out]">            
             

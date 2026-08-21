@@ -82,10 +82,10 @@ const dashboardsNavigationConfig: NavigationTree[] = [
                 subMenu: [],
             },
             {
-                key: 'concepts.CampaignBuilder',
-                path: '/concepts/CampaignBuilder',
+                key: 'concepts.CampaignList',
+                path: '/concepts/CampaignList',
                 title: 'ارسال گروهی',
-                translateKey: 'nav.concepts.CampaignBuilder',
+                translateKey: 'nav.concepts.CampaignList',
                 icon: 'chat',
                 type: 'item',
                 authority: [ADMIN, USER],
