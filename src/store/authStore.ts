@@ -16,8 +16,8 @@ type AuthState = {
 
 type AuthAction = {
     setSessionSignedIn: (payload: boolean) => void
-    setUser: (payload: Partial<User>) => void // ✨ تغییر به Partial برای رفع خطاهای TS و آپدیت راحت‌تر
-    clearSession: () => void // ✨ متد استاندارد برای خروج از حساب
+    setUser: (payload: Partial<User>) => void
+    clearSession: () => void 
 }
 
 const getPersistStorage = () => {
@@ -60,12 +60,19 @@ export const useSessionUser = create<AuthState & AuthAction>()(
                 })),
                 
             setUser: (payload) =>
-                set((state) => ({
-                    user: {
-                        ...state.user,
-                        ...payload,
-                    },
-                })),
+                set((state) => {
+                    const mappedAuthority = payload.role 
+                        ? [payload.role] 
+                        : payload.authority || state.user.authority;
+
+                    return {
+                        user: {
+                            ...state.user,
+                            ...payload,
+                            authority: mappedAuthority,
+                        },
+                    };
+                }),
                 
             // متد جادویی و تمیز برای ریست کردن کامل وضعیت به حالت اولیه
             clearSession: () => set(() => ({ ...initialState })),

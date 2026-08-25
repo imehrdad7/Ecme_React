@@ -5,6 +5,7 @@ import {
     HiOutlineRefresh,
     HiOutlineTrash
 } from 'react-icons/hi';
+import { FaRobot } from 'react-icons/fa';
 import { Message } from '../types';
 import appConfig from '@/configs/app.config'; 
 import { VoicePlayer } from './VoicePlayer';
@@ -85,6 +86,7 @@ export const MessageBubble = ({ message, currentUserId, onResend, onDelete, isFi
 
     const isOutgoing = message.direction === 2;
     const isBot = isOutgoing && !message.senderUserId;
+    debugger
     const isFailed = message.status === 0 || message.status === 1;
 
     const alignmentClass = isOutgoing 
@@ -115,6 +117,7 @@ export const MessageBubble = ({ message, currentUserId, onResend, onDelete, isFi
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [showMenu]);
 
+    
     const isImage = message.type === 2 || (message.type !== 3 && message.type !== 5 && message.mediaUrl?.match(/\.(jpg|jpeg|png|gif|webp)$/i) !== null);
     const isVideo = message.type === 3 || (message.type !== 2 && message.type !== 5 && message.mediaUrl?.match(/\.(mp4|webm|ogv|mov|mkv)$/i) !== null);   
     const isAudio = message.type === 5 || (message.type !== 2 && message.type !== 3 && message.mediaUrl?.match(/\.(mp3|wav|ogg|oga|m4a)$/i) !== null);
@@ -291,22 +294,25 @@ export const MessageBubble = ({ message, currentUserId, onResend, onDelete, isFi
                                 {formatTime(message.createdAt)}
                             </span>
                             {isOutgoing && (
-                                <span className={`text-[11px] ${isJumboEmoji ? 'text-gray-500 dark:text-gray-300' : ''}`}>
-                                    {message.status === 1 && (
-                                        <span className="text-gray-400 text-[10px]">🕐</span>
+                                <span className={`text-[11px] flex items-center gap-1 ${isJumboEmoji ? 'text-gray-500 dark:text-gray-300' : ''}`}>
+                                    
+                                    {message.senderUserId ? (
+                                        <>
+                                            {message.status === 1 && <span className="text-gray-400 text-[10px]">🕐</span>}
+                                            {message.status === 2 && <span className="text-gray-400 font-bold">✓</span>}
+                                            {message.status === 3 && <span className="text-gray-400 font-bold">✓✓</span>}
+                                            {message.status === 4 && <span className="text-blue-500 font-bold drop-shadow-sm">✓✓</span>}
+                                            {message.status === 0 && <span className="text-red-500 text-[10px]">❌</span>}
+                                        </>
+                                    ) : (
+                                        <span 
+                                            className="text-emerald-500/70 dark:text-emerald-400/70 flex items-center" 
+                                            title="ارسال خودکار توسط AnyBot"
+                                        >
+                                            <FaRobot size={11} />
+                                        </span>
                                     )}
-                                    {message.status === 2 && (
-                                        <span className="text-gray-400 font-bold">✓</span>
-                                    )}
-                                    {message.status === 3 && (
-                                        <span className="text-gray-400 font-bold">✓✓</span>
-                                    )}
-                                    {message.status === 4 && (
-                                        <span className="text-blue-500 font-bold drop-shadow-sm">✓✓</span>
-                                    )}
-                                    {message.status === 0 && (
-                                        <span className="text-red-500 text-[10px]">❌</span>
-                                    )}
+                                    
                                 </span>
                             )}
                         </div>

@@ -4,7 +4,7 @@ import {
     NAV_ITEM_TYPE_COLLAPSE,
     NAV_ITEM_TYPE_ITEM,
 } from '@/constants/navigation.constant'
-import { ADMIN, USER } from '@/constants/roles.constant'
+import {SuperAdmin, ADMIN, USER } from '@/constants/roles.constant'
 import type { NavigationTree } from '@/@types/navigation'
 
 const conceptsNavigationConfig: NavigationTree[] = [
@@ -418,7 +418,7 @@ const conceptsNavigationConfig: NavigationTree[] = [
                         translateKey: 'nav.conceptsAccount.settings',
                         icon: 'accountSettings',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [ADMIN, USER],
+                        authority: [SuperAdmin, ADMIN, USER],
                         meta: {
                             description: {
                                 translateKey: 'nav.conceptsAccount.settingsDesc',

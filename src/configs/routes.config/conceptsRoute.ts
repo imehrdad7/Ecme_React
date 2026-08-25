@@ -1,139 +1,140 @@
 import { lazy } from 'react'
 import { CONCEPTS_PREFIX_PATH } from '@/constants/route.constant'
-import { ADMIN, USER } from '@/constants/roles.constant'
 import type { Routes } from '@/@types/routes'
+import { SuperAdmin, ADMIN, USER } from '@/constants/roles.constant'
+
 
 const conceptsRoute: Routes = [
     {
         key: 'concepts.bots.botList',
         path: '/concepts/bots/bot-list',
         component: lazy(() => import('@/views/concepts/bots/bot-list/BotList')),
-        authority: [ADMIN, USER],
+        authority: [SuperAdmin, ADMIN, USER],
     },
     {
         key: 'concepts.bots.botCreate',
         path: '/concepts/bots/bot-create',
         component: lazy(() => import('@/views/concepts/bots/bot-create/BotCreate')),
-        authority: [ADMIN, USER],
+        authority: [SuperAdmin, ADMIN],
     },
     {
         key: 'concepts.bots.botEdit',
         path: '/concepts/bots/bot-edit/:id',
         component: lazy(() => import('@/views/concepts/bots/bot-edit/BotEdit')),
-        authority: [ADMIN, USER],
+        authority: [SuperAdmin, ADMIN],
     },
     {
         key: 'concepts.autoReply.list',
         path: '/concepts/auto-reply/list',
         component: lazy(() => import('@/views/concepts/auto-reply/AutoReplyList')),
-        authority: [ADMIN, USER],
+        authority: [SuperAdmin, ADMIN, USER],
     },
     {
         key: 'concepts.autoReply.create',
         path: '/concepts/auto-reply/create', 
         component: lazy(() => import('@/views/concepts/auto-reply/AutoReplyForm')),
-        authority: [ADMIN, USER],
+        authority: [SuperAdmin, ADMIN],
     },
     {
         key: 'concepts.autoReply.edit',
         path: '/concepts/auto-reply/edit/:id',
         component: lazy(() => import('@/views/concepts/auto-reply/AutoReplyForm')),
-        authority: [ADMIN, USER],
+        authority: [SuperAdmin, ADMIN],
     },
     {
         key: 'concepts.inbox',
         path: '/concepts/inbox',
         component: lazy(() => import('@/views/concepts/Inbox/Inbox')),
-        authority: [ADMIN, USER],
+        authority: [SuperAdmin, ADMIN, USER],
     },
     {
         key: 'concepts.dashboard',
         path: '/concepts/dashboard',
         component: lazy(() => import('@/views/concepts/dashboard/Dashboard')),
-        authority: [ADMIN, USER],
+        authority: [SuperAdmin, ADMIN],
     },
     {
         key: 'concepts.Integrations',
         path: '/concepts/Integrations',
         component: lazy(() => import('@/views/concepts/integrations/Integrations')),
-        authority: [ADMIN, USER],
+        authority: [SuperAdmin, ADMIN],
     },
     {
         key: 'concepts.WidgetBuilder',
         path: '/concepts/WidgetBuilder',
         component: lazy(() => import('@/views/concepts/widget-builder/WidgetBuilder')),
-        authority: [ADMIN, USER],
+        authority: [SuperAdmin, ADMIN, USER],
     },
     {
         key: 'concepts.CampaignList',
         path: '/concepts/CampaignList',
         component: lazy(() => import('@/views/concepts/campaigns/CampaignList')),
-        authority: [ADMIN, USER],
+        authority: [SuperAdmin, ADMIN],
     },
     {
         key: 'campaigns-create',
         path: '/concepts/campaigns/create',
         component: lazy(() => import('@/views/concepts/campaigns/CampaignForm')),
-        authority: [],
+        authority: [SuperAdmin, ADMIN],
     },
     {
-        key: 'campaigns-edit', // حتماً key متفاوت باشد
-        path: '/concepts/campaigns/:id/edit', // پارامتر id در آدرس
-        component: lazy(() => import('@/views/concepts/campaigns/CampaignForm')), // دقیقاً همان فرم لود می‌شود
-        authority: [],
+        key: 'campaigns-edit',
+        path: '/concepts/campaigns/:id/edit',
+        component: lazy(() => import('@/views/concepts/campaigns/CampaignForm')),
+        authority: [SuperAdmin, ADMIN],
     },
     {
         key: 'campaigns-contacts',
         path: '/concepts/campaigns/:campaignId/contacts',
         component: lazy(() => import('@/views/concepts/campaigns/CampaignContacts')),
-        authority: [], 
+        authority: [SuperAdmin, ADMIN], 
     },
     {
         key: 'campaigns-Report',
         path: '/concepts/campaigns/:campaignId/report',
         component: lazy(() => import('@/views/concepts/campaigns/CampaignReport')),
-        authority: [], 
+        authority: [SuperAdmin, ADMIN], 
     },
     {
         key: 'concepts.crm',
         path: '/concepts/contacts',
         component: lazy(() => import('@/views/concepts/contacts/ContactsCRM')),
-        authority: [ADMIN, USER],
+        authority: [SuperAdmin, ADMIN],
     },{
         key: 'concepts.aiConfig',
         path: '/concepts/ai-settings',
         component: lazy(() => import('@/views/concepts/ai-config/AiSettingsPage')),
-        authority: [],
+        authority: [SuperAdmin, ADMIN],
     },{
         key: 'concepts.knowledge',
         path: '/concepts/knowledge',
         component: lazy(() => import('@/views/concepts/knowledge/KnowledgeManager')),
-        authority: [],
+        authority: [SuperAdmin, ADMIN],
     },{
         key: 'concepts.plans',
         path: '/concepts/plans',
         component: lazy(() => import('@/views/concepts/plan/PlanList')),
-        authority: [],
+        authority: [SuperAdmin, ADMIN],
     },{
         key: 'concepts.Pricing',
         path: '/concepts/Pricing',
         component: lazy(() => import('@/views/concepts/client/Pricing')),
-        authority: [],
+        authority: [SuperAdmin, ADMIN, USER],
     },{
         key: 'concepts.PricingCompare',
         path: '/concepts/PricingCompare',
         component: lazy(() => import('@/views/concepts/client/PricingCompare')),
-        authority: [],
+        authority: [SuperAdmin, ADMIN, USER],
     },{
         key: 'client.billing.verify',
         path: '/billing/verify',
         component: lazy(() => import('@/views/concepts/client/PaymentVerify')),
-        authority: ['client', 'user'], 
+        authority: [SuperAdmin, ADMIN, USER], 
     },{
         key: 'concepts.InvoiceList',
         path: '/concepts/InvoiceList',
         component: lazy(() => import('@/views/concepts/invoices/InvoiceList')),
-        authority: ['client', 'user'], 
+        authority: [SuperAdmin, ADMIN], 
     },
 
 
@@ -147,7 +148,7 @@ const conceptsRoute: Routes = [
         key: 'concepts.ai.chat',
         path: `${CONCEPTS_PREFIX_PATH}/ai/chat`,
         component: lazy(() => import('@/views/concepts/ai/Chat')),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
         },
@@ -156,7 +157,7 @@ const conceptsRoute: Routes = [
         key: 'concepts.ai.image',
         path: `${CONCEPTS_PREFIX_PATH}/ai/image`,
         component: lazy(() => import('@/views/concepts/ai/Image')),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
             pageBackgroundType: 'plain',
@@ -168,7 +169,7 @@ const conceptsRoute: Routes = [
         component: lazy(
             () => import('@/views/concepts/customers/CustomerList'),
         ),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
     },
     {
         key: 'concepts.customers.customerEdit',
@@ -176,7 +177,7 @@ const conceptsRoute: Routes = [
         component: lazy(
             () => import('@/views/concepts/customers/CustomerEdit'),
         ),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             header: {
                 title: 'ویرایش مشتری',
@@ -193,7 +194,7 @@ const conceptsRoute: Routes = [
         component: lazy(
             () => import('@/views/concepts/customers/CustomerCreate'),
         ),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             header: {
                 title: 'ایجاد مشتری',
@@ -210,7 +211,7 @@ const conceptsRoute: Routes = [
         component: lazy(
             () => import('@/views/concepts/customers/CustomerDetails'),
         ),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
         },
@@ -219,13 +220,13 @@ const conceptsRoute: Routes = [
         key: 'concepts.products.productList',
         path: `${CONCEPTS_PREFIX_PATH}/products/product-list`,
         component: lazy(() => import('@/views/concepts/products/ProductList')),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
     },
     {
         key: 'concepts.products.productEdit',
         path: `${CONCEPTS_PREFIX_PATH}/products/product-edit/:id`,
         component: lazy(() => import('@/views/concepts/products/ProductEdit')),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             header: {
                 title: 'ویرایش محصول',
@@ -242,7 +243,7 @@ const conceptsRoute: Routes = [
         component: lazy(
             () => import('@/views/concepts/products/ProductCreate'),
         ),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             header: {
                 title: 'ایجاد محصول',
@@ -257,7 +258,7 @@ const conceptsRoute: Routes = [
         key: 'concepts.projects.scrumBoard',
         path: `${CONCEPTS_PREFIX_PATH}/projects/scrum-board`,
         component: lazy(() => import('@/views/concepts/projects/ScrumBoard')),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
         },
@@ -266,7 +267,7 @@ const conceptsRoute: Routes = [
         key: 'concepts.projects.projectList',
         path: `${CONCEPTS_PREFIX_PATH}/projects/project-list`,
         component: lazy(() => import('@/views/concepts/projects/ProjectList')),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
             pageBackgroundType: 'plain',
@@ -278,7 +279,7 @@ const conceptsRoute: Routes = [
         component: lazy(
             () => import('@/views/concepts/projects/ProjectDetails'),
         ),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
             pageBackgroundType: 'plain',
@@ -288,7 +289,7 @@ const conceptsRoute: Routes = [
         key: 'concepts.projects.projectTasks',
         path: `${CONCEPTS_PREFIX_PATH}/projects/tasks`,
         component: lazy(() => import('@/views/concepts/projects/Tasks')),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
         },
@@ -297,7 +298,7 @@ const conceptsRoute: Routes = [
         key: 'concepts.projects.projectIssue',
         path: `${CONCEPTS_PREFIX_PATH}/projects/tasks/:id`,
         component: lazy(() => import('@/views/concepts/projects/Issue')),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
         },
@@ -306,7 +307,7 @@ const conceptsRoute: Routes = [
         key: 'concepts.orders.orderList',
         path: `${CONCEPTS_PREFIX_PATH}/orders/order-list`,
         component: lazy(() => import('@/views/concepts/orders/OrderList')),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
         },
@@ -315,7 +316,7 @@ const conceptsRoute: Routes = [
         key: 'concepts.orders.orderEdit',
         path: `${CONCEPTS_PREFIX_PATH}/orders/order-edit/:id`,
         component: lazy(() => import('@/views/concepts/orders/OrderEdit')),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             header: {
                 title: 'ویرایش سفارش',
@@ -329,7 +330,7 @@ const conceptsRoute: Routes = [
         key: 'concepts.orders.orderCreate',
         path: `${CONCEPTS_PREFIX_PATH}/orders/order-create`,
         component: lazy(() => import('@/views/concepts/orders/OrderCreate')),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             header: {
                 title: 'نظم ایجاد کنید',
@@ -344,7 +345,7 @@ const conceptsRoute: Routes = [
         key: 'concepts.orders.orderDetails',
         path: `${CONCEPTS_PREFIX_PATH}/orders/order-details/:id`,
         component: lazy(() => import('@/views/concepts/orders/OrderDetails')),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             header: {
                 contained: true,
@@ -368,7 +369,7 @@ const conceptsRoute: Routes = [
         key: 'concepts.account.settings',
         path: `${CONCEPTS_PREFIX_PATH}/account/settings`,
         component: lazy(() => import('@/views/concepts/accounts/Settings')),
-        authority: [ADMIN, USER],
+        authority: [SuperAdmin, ADMIN, USER],
         meta: {
             header: {
                 title: 'تنظیمات',
@@ -380,7 +381,7 @@ const conceptsRoute: Routes = [
         key: 'concepts.account.activityLog',
         path: `${CONCEPTS_PREFIX_PATH}/account/activity-log`,
         component: lazy(() => import('@/views/concepts/accounts/ActivityLog')),
-        authority: [ADMIN, USER],
+        authority: [SuperAdmin, ADMIN],
         meta: {
             pageContainerType: 'contained',
         },
@@ -391,7 +392,7 @@ const conceptsRoute: Routes = [
         component: lazy(
             () => import('@/views/concepts/accounts/RolesPermissions'),
         ),
-        authority: [ADMIN, USER],
+        authority: [SuperAdmin, ADMIN],
         meta: {
             pageContainerType: 'contained',
             pageBackgroundType: 'plain',
@@ -401,7 +402,7 @@ const conceptsRoute: Routes = [
         key: 'concepts.account.pricing',
         path: `${CONCEPTS_PREFIX_PATH}/account/pricing`,
         component: lazy(() => import('@/views/concepts/accounts/Pricing')),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN],
         meta: {
             pageContainerType: 'contained',
         },
@@ -412,7 +413,7 @@ const conceptsRoute: Routes = [
         component: lazy(
             () => import('@/views/concepts/help-center/SupportHub'),
         ),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             pageContainerType: 'gutterless',
             pageBackgroundType: 'plain',
@@ -422,7 +423,7 @@ const conceptsRoute: Routes = [
         key: 'concepts.helpCenter.article',
         path: `${CONCEPTS_PREFIX_PATH}/help-center/article/:id`,
         component: lazy(() => import('@/views/concepts/help-center/Article')),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
             pageBackgroundType: 'plain',
@@ -434,7 +435,7 @@ const conceptsRoute: Routes = [
         component: lazy(
             () => import('@/views/concepts/help-center/EditArticle'),
         ),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             pageBackgroundType: 'plain',
             footer: false,
@@ -446,7 +447,7 @@ const conceptsRoute: Routes = [
         component: lazy(
             () => import('@/views/concepts/help-center/ManageArticle'),
         ),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             pageBackgroundType: 'plain',
             footer: false,
@@ -456,7 +457,7 @@ const conceptsRoute: Routes = [
         key: 'concepts.calendar',
         path: `${CONCEPTS_PREFIX_PATH}/calendar`,
         component: lazy(() => import('@/views/concepts/calendar/Calendar')),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
             pageBackgroundType: 'plain',
@@ -466,7 +467,7 @@ const conceptsRoute: Routes = [
         key: 'concepts.fileManager',
         path: `${CONCEPTS_PREFIX_PATH}/file-manager`,
         component: lazy(() => import('@/views/concepts/files/FileManager')),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
             pageBackgroundType: 'plain',
@@ -476,7 +477,7 @@ const conceptsRoute: Routes = [
         key: 'concepts.mail',
         path: `${CONCEPTS_PREFIX_PATH}/mail`,
         component: lazy(() => import('@/views/concepts/mail/Mail')),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
         },
@@ -485,7 +486,7 @@ const conceptsRoute: Routes = [
         key: 'concepts.chat',
         path: `${CONCEPTS_PREFIX_PATH}/chat`,
         component: lazy(() => import('@/views/concepts/chat/Chat')),
-        authority: [ADMIN, USER],
+                authority: [SuperAdmin, ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
         },

@@ -58,6 +58,12 @@ const messageTypeConfigs = [
     // { id: MessageType.Interactive, label: 'دکمه‌دار', icon: HiOutlineViewGridAdd, color: 'text-indigo-500', activeBg: 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-800' },
 ]
 
+const smartPlaceholders = [
+        { id: 'fullName', label: 'نام کامل', tag: '{FullName}' },
+        { id: 'phoneNumber', label: 'شماره موبایل', tag: '{PhoneNumber}' }
+    ];
+
+
 const jalaliToGregorian = (jy: number, jm: number, jd: number) => { 
     const jDaysInMonth = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
     let gy = jy + 621; let days = 0;
@@ -95,11 +101,13 @@ const CampaignCreate = () => {
     const todayJalali = gregorianToJalali(today.getFullYear(), today.getMonth() + 1, today.getDate());
 
     const [sendTiming, setSendTiming] = useState<'now' | 'scheduled'>('now')
-    const [scheduleYear] = useState<number>(todayJalali.jy) // سال پویا
+    const [scheduleYear] = useState<number>(todayJalali.jy)
     const [scheduleDay, setScheduleDay] = useState<number>(todayJalali.jd)
     const [scheduleMonth, setScheduleMonth] = useState<number>(todayJalali.jm)
     const [scheduleHour, setScheduleHour] = useState<string>(String(today.getHours()).padStart(2, '0'))
     const [scheduleMinute, setScheduleMinute] = useState<string>(String(today.getMinutes()).padStart(2, '0'))
+
+    const [cursorPosition, setCursorPosition] = useState<number | null>(null);
 
 
     useEffect(() => {
@@ -119,7 +127,6 @@ const CampaignCreate = () => {
         fetchBots()
     }, [])
 
-    // تشخیص پلتفرم ربات انتخاب شده برای محدودسازی نوع پیام
     const activeBotPlatform = useMemo(() => {
         const bot = bots.find(b => b.id === formData.selectedBotId);
         
@@ -153,7 +160,6 @@ const CampaignCreate = () => {
         return platformCapabilities[activeBotPlatform] || [MessageType.Text];
     }, [activeBotPlatform])
 
-    // اگر ربات تغییر کرد و نوع پیام فعلی پشتیبانی نمی‌شد، برگرد روی متن ساده
     useEffect(() => {
         if (!supportedMessageTypes.includes(formData.messageType)) {
             updateField('messageType', MessageType.Text)
@@ -271,6 +277,15 @@ const CampaignCreate = () => {
             setIsSubmitting(false)
         }
     }
+
+    const handleInsertPlaceholder = (tag: string) => {
+        const currentText = formData.messageText || '';
+        const pos = cursorPosition !== null ? cursorPosition : currentText.length;
+        
+        const newText = currentText.slice(0, pos) + tag + currentText.slice(pos);
+        updateField('messageText', newText);
+        setCursorPosition(pos + tag.length);
+    };
 
     return (
         <div className="w-full max-w-4xl mx-auto pb-12 animate-[fadeIn_0.3s_ease-out]" dir="rtl">
@@ -461,8 +476,9 @@ const CampaignCreate = () => {
                         </div>
                     )}
 
-                    {/* ورودی داینامیک مدیا و متن کپشن */}
-                    <div className="mt-2">
+                    {/* 🌟 ورودی داینامیک مدیا و متن کپشن */}
+                    <div className="mt-4 flex flex-col gap-4">
+                        
                         <MediaUploader 
                             companyId={companyId}
                             messageType={formData.messageType}
@@ -470,14 +486,54 @@ const CampaignCreate = () => {
                             setMediaUrl={(url) => updateField('mediaUrl', url)}
                         />
                         
-                        <Input 
-                            textArea 
-                            rows={formData.messageType === MessageType.Text ? 8 : 4}
-                            placeholder={formData.messageType === MessageType.Text ? "سلام {name} عزیز! متن پیام خود را اینجا بنویسید..." : "کپشن یا توضیحات فایل را اینجا بنویسید (اختیاری)..."} 
-                            value={formData.messageText} 
-                            onChange={(e) => updateField('messageText', e.target.value)} 
-                            className="bg-gray-50 dark:bg-gray-800 border-none shadow-inner text-sm leading-relaxed resize-none p-5" 
-                        />
+                        {/* 🌟 باکس متغیرهای هوشمند */}
+                        <div className="flex flex-col gap-2 animate-[fadeIn_0.3s_ease-out]">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
+                                <span className="text-xs font-bold text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                                    <HiOutlineDocumentText className="text-indigo-500 text-lg" />
+                                    متغیرهای هوشمند (شخصی‌سازی پیام)
+                                </span>
+                                <span className="text-[10px] text-gray-400 italic">
+                                    * در جای خالی کلیک کنید و متغیر را درج کنید
+                                </span>
+                            </div>
+                            
+                            <div className="flex flex-wrap gap-2">
+                                {smartPlaceholders.map(p => (
+                                    <button
+                                        key={p.id}
+                                        type="button"
+                                        onClick={() => handleInsertPlaceholder(p.tag)}
+                                        className="text-xs font-bold px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded-lg transition-colors border border-indigo-100 dark:border-indigo-800/50 active:scale-95"
+                                    >
+                                        + {p.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="relative">
+                            <Input 
+                                textArea 
+                                rows={formData.messageType === MessageType.Text ? 8 : 4}
+                                placeholder={formData.messageType === MessageType.Text ? "سلام {FirstName} عزیز! متن پیام خود را اینجا بنویسید..." : "کپشن یا توضیحات فایل را اینجا بنویسید (اختیاری)..."} 
+                                value={formData.messageText} 
+                                
+                                onChange={(e) => {
+                                    updateField('messageText', e.target.value);
+                                    setCursorPosition(e.target.selectionStart);
+                                }}
+                                onSelect={(e: any) => setCursorPosition(e.target.selectionStart)}
+                                onKeyUp={(e: any) => setCursorPosition(e.target.selectionStart)}
+                                onClick={(e: any) => setCursorPosition(e.target.selectionStart)}
+                                
+                                className="w-full bg-gray-50 dark:bg-gray-800 border-none shadow-inner text-sm leading-relaxed resize-none p-5 rounded-2xl" 
+                            />
+                        </div>
+                        
+                        <p className="text-xs text-gray-400 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700/50">
+                            💡 <b>نکته:</b> سیستم در هنگام ارسال، این متغیرها را با اطلاعات واقعی هر مخاطب جایگزین می‌کند. اگر مخاطبی در دیتابیس نامی نداشته باشد، از کلمات پیش‌فرض (مثل "همراه") استفاده خواهد شد.
+                        </p>
                     </div>
                 </div>
 

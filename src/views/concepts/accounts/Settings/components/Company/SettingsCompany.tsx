@@ -164,7 +164,7 @@ const SettingsCompany = () => {
             <Form onSubmit={handleSubmit(onSubmit)}>
                 <div className="flex items-center justify-between mb-8 border-b border-gray-200 dark:border-gray-700 pb-4">
                     <h4 className="mb-0">اطلاعات شرکت</h4>
-                    <div className="flex items-center gap-2 mr-4 border-r border-gray-200 pr-4">
+                    <div className="">
                         {user?.companyId && (
                         <div className="flex items-center gap-2 mr-4 border-r border-gray-200 pr-4">
                             <span className={`font-semibold ${currentStatus ? 'text-green-600' : 'text-red-600'}`}>
@@ -207,7 +207,7 @@ const SettingsCompany = () => {
                                     type="text"
                                     autoComplete="off"
                                     placeholder="مثلاً: توسعه‌دهندگان پیشرو"
-                                    disabled={isLoadingData} // تا زمان دریافت اطلاعات، اینپوت غیرفعال باشد
+                                    disabled={isLoadingData}
                                     {...field}
                                 />
                             )}
@@ -216,7 +216,7 @@ const SettingsCompany = () => {
                 </div>
             </Form>
             {hasActiveCompany && (
-                <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700 animate-[fadeIn_0.5s_ease-out]">
+                <div className="mt-9 border-t border-gray-200 dark:border-gray-700 animate-[fadeIn_0.5s_ease-out]">
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 bg-gray-50 dark:bg-gray-800 rounded-xl">
                         <div className="mb-4 md:mb-0">
                             <h5 className="mb-2">تنظیمات پیشرفته گفتگو</h5>

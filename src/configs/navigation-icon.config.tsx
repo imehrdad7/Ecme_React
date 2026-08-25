@@ -1,3 +1,18 @@
+import { TbMessageBolt } from 'react-icons/tb'
+import {
+    HiOutlineChip,           // بات‌ها
+    HiOutlineInboxIn,        // صندوق ورودی
+    HiOutlineLink,           // اتصال به کانال
+    HiOutlineColorSwatch,    // استودیوی گفتگو (حس طراحی و ساخت)
+    HiOutlineSpeakerphone,   // کمپین (بلندگو)
+    HiOutlineUserGroup,      // مخاطبین
+    HiOutlineSparkles,       // هوش مصنوعی (حس جادو)
+    HiOutlineDatabase,       // پایگاه دانش
+    HiOutlineBadgeCheck,     // پلن‌ها (نشان تایید و پکیج)
+    HiOutlineShoppingCart,   // خرید پلن
+    HiOutlineReceiptTax      // تاریخچه خرید (فاکتور)
+} from 'react-icons/hi'
+
 import {
     PiPuzzlePieceDuotone,
     PiSwatchesDuotone,
@@ -188,7 +203,19 @@ const navigationIcon: NavigationIcons = {
     sharedComponentDoc: <PiShareNetworkDuotone />,
     utilsDoc: <PiToolboxDuotone />,
     changeLog: <PiCodeDuotone />,
-    Robot:<PiRobot/>
+    Robot:<PiRobot/>,
+    bot: <HiOutlineChip />,
+    autoReply: <TbMessageBolt />,
+    inbox: <HiOutlineInboxIn />,
+    integration: <HiOutlineLink />,
+    widget: <HiOutlineColorSwatch />,
+    campaign: <HiOutlineSpeakerphone />,
+    contacts: <HiOutlineUserGroup />,
+    Myai: <HiOutlineSparkles />,
+    knowledge: <HiOutlineDatabase />,
+    plans: <HiOutlineBadgeCheck />,
+    pricing: <HiOutlineShoppingCart />,
+    invoice: <HiOutlineReceiptTax />
 }
 
 export default navigationIcon

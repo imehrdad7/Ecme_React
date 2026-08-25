@@ -24,7 +24,7 @@ const PLATFORMS = [
     { id: 'telegram', label: 'تلگرام' },
     { id: 'whatsapp', label: 'واتس‌اپ' },
     { id: 'instagram', label: 'اینستاگرام' },
-    { id: 'web', label: 'وب' },
+    { id: 'bale', label: 'بله' },
 ];
 
 export const ChatSidebar = ({ 

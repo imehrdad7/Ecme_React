@@ -14,17 +14,56 @@ import {
 import type { View } from '../types'
 import type { ReactNode } from 'react'
 
+// 🌟 ۱. ایمپورت کردن استور و نقش‌ها
+import { useSessionUser } from '@/store/authStore'
+import { SuperAdmin, ADMIN, USER } from '@/constants/roles.constant' 
+
 const { MenuItem } = Menu
 
-const menuList: { label: string; value: View; icon: ReactNode }[] = [
-    { label: 'پروفایل', value: 'profile', icon: <TbUserSquare /> },
-    { label: 'شرکت', value: 'companySetting', icon: <TbBrandOffice /> },
-    { label: 'مدیریت تیم', value: 'TeamManagement', icon: <TbBrandTeams /> },
-    { label: 'اشتراک من', value: 'SettingSubscription', icon: <TbFileDollar /> },
-    { label: 'امنیت', value: 'security', icon: <TbLock /> },
-    { label: 'اعلان', value: 'notification', icon: <TbBell /> },
-    { label: 'صورتحساب', value: 'billing', icon: <TbFileDollar /> },
-    { label: 'یکپارچه‌سازی', value: 'integration', icon: <TbRefreshDot /> },
+type MenuListItem = {
+    label: string
+    value: View
+    icon: ReactNode
+    authority?: string[] 
+}
+
+const menuList: MenuListItem[] = [
+    { 
+        label: 'پروفایل', 
+        value: 'profile', 
+        icon: <TbUserSquare />,
+        authority: [SuperAdmin, ADMIN, USER]
+    },
+    { 
+        label: 'شرکت', 
+        value: 'companySetting', 
+        icon: <TbBrandOffice />,
+        authority: [SuperAdmin, ADMIN]
+    },
+    { 
+        label: 'مدیریت تیم', 
+        value: 'TeamManagement', 
+        icon: <TbBrandTeams />,
+        authority: [SuperAdmin, ADMIN]
+    },
+    { 
+        label: 'اشتراک من', 
+        value: 'SettingSubscription', 
+        icon: <TbFileDollar />,
+        authority: [SuperAdmin, ADMIN]
+    },
+    { 
+        label: 'امنیت', 
+        value: 'security', 
+        icon: <TbLock />,
+        authority: [SuperAdmin, ADMIN, USER]
+    },
+    { 
+        label: 'اعلان', 
+        value: 'notification', 
+        icon: <TbBell />,
+        authority: [SuperAdmin, ADMIN, USER]
+    },
 ]
 
 export const SettingsMenu = ({ onChange }: { onChange?: () => void }) => {
@@ -33,6 +72,14 @@ export const SettingsMenu = ({ onChange }: { onChange?: () => void }) => {
     const { currentView, setCurrentView } = useSettingsStore()
 
     const currentPath = query.get('category') || query.get('label') || 'inbox'
+
+    const { authority, role } = useSessionUser((state) => state.user)
+    const userRoles = authority || (role ? [role] : [])
+
+    const visibleMenuList = menuList.filter(menu => {
+        if (!menu.authority || menu.authority.length === 0) return true;
+        return menu.authority.some(allowedRole => userRoles.includes(allowedRole));
+    })
 
     const handleSelect = (value: View) => {
         setCurrentView(value)
@@ -43,7 +90,7 @@ export const SettingsMenu = ({ onChange }: { onChange?: () => void }) => {
         <div className="flex flex-col justify-between h-full">
             <ScrollBar className="h-full overflow-y-auto">
                 <Menu className="mx-2 mb-10">
-                    {menuList.map((menu) => (
+                    {visibleMenuList.map((menu) => (
                         <MenuItem
                             key={menu.value}
                             eventKey={menu.value}

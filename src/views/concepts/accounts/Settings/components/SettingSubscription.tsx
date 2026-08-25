@@ -182,7 +182,7 @@ const SettingSubscription = () => {
                         size="sm" 
                         variant="plain" 
                         className="flex items-center gap-2 text-indigo-600 hover:bg-indigo-50 transition-colors"
-                        onClick={() => navigate('/concepts/InvoiceList')} // 👈 مسیر صفحه پرداخت‌ها را اینجا قرار دهید
+                        onClick={() => navigate('/concepts/InvoiceList')}
                     >
                         تاریخچه پرداخت‌ها
                     </Button>

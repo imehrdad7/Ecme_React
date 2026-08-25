@@ -66,6 +66,7 @@ export type User = {
     phoneNumber?: string | null
     email?: string | null
     authority?: string[]
+    role?: string
     companyId?: string
     companyName?: string
     subscriptionEndDate?: string | null

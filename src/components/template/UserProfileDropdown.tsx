@@ -7,21 +7,22 @@ import { PiUserDuotone, PiGearDuotone, PiPulseDuotone, PiSignOutDuotone } from '
 import { useAuth } from '@/auth'
 import appConfig from '@/configs/app.config'
 
+import { SuperAdmin, ADMIN, USER } from '@/constants/roles.constant' 
 
 type DropdownList = {
     label: string
     path: string
     icon: JSX.Element
+    authority?: string[] 
 }
+
 const getFullAvatarUrl = (avatarPath?: string | null) => {
     if (!avatarPath) return '';
     
-    // اگر آدرس از قبل کامل بود یا blob موقت بود، دست نزن
     if (avatarPath.startsWith('http') || avatarPath.startsWith('blob:')) {
         return avatarPath;
     }
     
-    // تنظیم آی‌پی و پورت دقیق بک‌اند
     const backendBaseUrl = appConfig.apiPrefix; 
     const separator = avatarPath.startsWith('/') ? '' : '/';
     
@@ -33,21 +34,24 @@ const dropdownItemList: DropdownList[] = [
         label: 'پروفایل',
         path: '/concepts/account/settings',
         icon: <PiUserDuotone />,
+        authority: [SuperAdmin, ADMIN, USER],
     },
     {
         label: 'تنظیمات حساب',
         path: '/concepts/account/settings',
         icon: <PiGearDuotone />,
+        authority: [SuperAdmin, ADMIN],
     },
     {
         label: 'لاگ فعالیت',
         path: '/concepts/account/activity-log',
         icon: <PiPulseDuotone />,
+        authority: [SuperAdmin, ADMIN],
     },
 ]
 
 const _UserDropdown = () => {
-    const { avatarFileName, firstName,lastName, phoneNumber } = useSessionUser((state) => state.user)
+    const { avatarFileName, firstName, lastName, phoneNumber, authority, role } = useSessionUser((state) => state.user)
 
     const { signOut } = useAuth()
 
@@ -58,6 +62,13 @@ const _UserDropdown = () => {
     const avatarProps = {
         ...(avatarFileName ? { src: getFullAvatarUrl(avatarFileName) } : { icon: <PiUserDuotone /> }),
     }
+
+    const userRoles = authority || (role ? [role] : []);
+
+    const visibleDropdownItems = dropdownItemList.filter(item => {
+        if (!item.authority || item.authority.length === 0) return true;
+        return item.authority.some(allowedRole => userRoles.includes(allowedRole));
+    });
 
     return (
         <Dropdown
@@ -75,16 +86,18 @@ const _UserDropdown = () => {
                     <Avatar {...avatarProps} />
                     <div>
                         <div className="font-bold text-gray-900 dark:text-gray-100">
-                            { firstName +' '+ lastName|| 'Anonymous'}
+                            { [firstName, lastName].filter(Boolean).join(' ') || 'کاربر ناشناس' }
                         </div>
                         <div className="text-xs">
-                            {phoneNumber || 'No Phone available'}
+                            {phoneNumber || 'شماره‌ای ثبت نشده'}
                         </div>
                     </div>
                 </div>
             </Dropdown.Item>
+            
             <Dropdown.Item variant="divider" />
-            {dropdownItemList.map((item) => (
+            
+            {visibleDropdownItems.map((item) => (
                 <Dropdown.Item
                     key={item.label}
                     eventKey={item.label}
@@ -98,7 +111,9 @@ const _UserDropdown = () => {
                     </Link>
                 </Dropdown.Item>
             ))}
+            
             <Dropdown.Item variant="divider" />
+            
             <Dropdown.Item
                 eventKey="Sign Out"
                 className="gap-2"

@@ -13,21 +13,17 @@ const TeamManagement = lazy(() => import('./components/Team/TeamManagement'))
 const Security = lazy(() => import('./components/SettingsSecurity'))
 const Notification = lazy(() => import('./components/SettingsNotification'))
 const Billing = lazy(() => import('./components/SettingsBilling'))
-const Integration = lazy(() => import('./components/SettingIntegration'))
 
 const Settings = () => {
-    // 👈 تابع تغییر استیت (setCurrentView) را هم از استور استخراج می‌کنیم
     const { currentView, setCurrentView } = useSettingsStore() 
 
     const { smaller, larger } = useResponsive()
     const location = useLocation() // 👈 خواندن آدرس فعلی
 
-    // 🌟 این افکت بررسی می‌کند که اگر ریدایرکت شده‌ایم، تب را عوض کند
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search)
         const tab = searchParams.get('tab')
 
-        // اگر در URL نوشته بود tab=companySetting، استیت را تغییر بده
         if (tab === 'companySetting' && setCurrentView) {
             setCurrentView('companySetting')
         }
@@ -56,7 +52,6 @@ const Settings = () => {
                         {currentView === 'security' && <Security />}
                         {currentView === 'notification' && <Notification />}
                         {currentView === 'billing' && <Billing />}
-                        {currentView === 'integration' && <Integration />}
                     </Suspense>
                 </div>
             </div>

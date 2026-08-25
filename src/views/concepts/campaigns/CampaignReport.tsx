@@ -62,10 +62,8 @@ const CampaignReport = () => {
 
     useEffect(() => {
         let timeoutId: NodeJS.Timeout;
-        let isMounted = true; // برای جلوگیری از آپدیت استیت وقتی کاربر از صفحه خارج شده
-        debugger
+        let isMounted = true;
         const fetchReport = async (isBackground = false) => {
-            debugger
             if (!campaignId) return;
             
             if (!isBackground) setIsLoading(true);

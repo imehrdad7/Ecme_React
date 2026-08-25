@@ -17,7 +17,7 @@ import { useSessionUser } from '@/store/authStore'
 interface CampaignRowActionsProps {
     campaignId: string;
     status: number;
-    totalRecipients: number; // 🌟 این فیلد اضافه شد تا بتوانیم تعداد را چک کنیم
+    totalRecipients: number;
     openDeleteModal: (id: string) => void;
     openViewContactsModal: (id: string) => void;
 }
@@ -140,24 +140,30 @@ export const CampaignRowActions = ({ campaignId, status, totalRecipients, openDe
 
             case CampaignStatus.Paused:
                 return (
-                    <button onClick={() => executeAction('start')} className="flex items-center justify-center w-full gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-md transition-colors">
-                        <HiOutlinePlay className="text-sm" /> ادامه ارسال
-                    </button>
+                    <div className="flex flex-col gap-2 w-full sm:w-32">
+                        <button onClick={() => executeAction('start')} className="flex items-center justify-center w-full gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-md transition-colors">
+                            <HiOutlinePlay className="text-sm" /> ادامه ارسال
+                        </button>
+                    </div>
                 );
 
             case CampaignStatus.Retrying:
             case CampaignStatus.InProgress:
                 return (
-                    <button onClick={() => executeAction('pause')} className="flex items-center justify-center w-full gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-md transition-colors">
-                        <HiOutlinePause className="text-sm" /> توقف موقت
-                    </button>
+                    <div className="flex flex-col gap-2 w-full sm:w-32">
+                        <button onClick={() => executeAction('pause')} className="flex items-center justify-center w-full gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-md transition-colors">
+                            <HiOutlinePause className="text-sm" /> توقف موقت
+                        </button>
+                    </div>
                 );
             case CampaignStatus.Completed:
             case CampaignStatus.Cancelled:
                 return (
-                    <button onClick={() => navigate(`/concepts/campaigns/${campaignId}/report`)} className="flex items-center justify-center w-full gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
-                        <HiOutlineChartBar className="text-sm" /> گزارش
-                    </button>
+                    <div className="flex flex-col gap-2 w-full sm:w-32">
+                        <button onClick={() => navigate(`/concepts/campaigns/${campaignId}/report`)} className="flex items-center justify-center w-full gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors">
+                            <HiOutlineChartBar className="text-sm" /> گزارش
+                        </button>
+                    </div>
                 );
             default:
                 return null;

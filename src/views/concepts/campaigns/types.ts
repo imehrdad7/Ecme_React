@@ -75,6 +75,7 @@ export type CampaignDto = {
     botName: string;
     status: CampaignStatus;
     scheduledAt: string | null;
+    startedAt: string | null;
     contactsCount: number;
     createdAt: string;
     totalRecipients: number;

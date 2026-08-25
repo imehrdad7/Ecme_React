@@ -24,7 +24,7 @@ export const SignInBase = ({
     return (
         <div>
             <div className="mb-8">
-                <Logo type="streamline" mode={mode} imgClass="mx-auto" logoWidth={60} />
+                <Logo type="full" mode={mode} imgClass="mx-auto"  />
             </div>
             <div className="mb-10">
                 <h2 className="mb-2">خوش آمدید!</h2>

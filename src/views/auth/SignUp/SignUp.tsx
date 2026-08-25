@@ -21,7 +21,7 @@ export const SignUpBase = ({
     return (
         <>
             <div className="mb-8">
-                <Logo type="streamline" mode={mode} imgClass="mx-auto" logoWidth={60} />
+                <Logo type="full" mode={mode} imgClass="mx-auto"  />
             </div>
             <div className="mb-8">
                 <h3 className="mb-1">ثبت‌نام</h3>

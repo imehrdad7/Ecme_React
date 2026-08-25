@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Conversation, Message, SendMessagePayload } from '../types';
-import { 
-    apiSearchConversations, 
-    apiGetConversationMessages, 
+import {
+    apiSearchConversations,
+    apiGetConversationMessages,
     apiSendOutgoingMessage,
     apiUploadMedia,
     apiDeleteMedia,
@@ -13,7 +13,7 @@ import {
     apiGetCannedResponses,
     apiGetMessageContext,
     apiDeleteMessage
-} from '@/services/liveChatService'; 
+} from '@/services/liveChatService';
 import { useSessionUser, getToken } from '@/store/authStore';
 import React from 'react';
 import toast from '@/components/ui/toast';
@@ -23,14 +23,16 @@ import { useChatSocket } from '@/utils/hooks/useChatSocket';
 export const useChatState = () => {
     const { user } = useSessionUser();
     const companyId = user?.companyId;
-    const currentUserId = user?.id; 
+    const currentUserId = user?.id;
     const [resolvedToken, setResolvedToken] = useState<string>('');
     const [cannedResponses, setCannedResponses] = useState<any[]>([]);
-
+    const blinkIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const originalTitleRef = useRef<string>('AnyBot');
+    const hiddenUnreadCountRef = useRef<number>(0);
     useEffect(() => {
         const fetchToken = async () => {
             try {
-                const t = await getToken(); 
+                const t = await getToken();
                 if (t) setResolvedToken(t);
             } catch (error) {
                 console.error("خطا در خواندن توکن از استوریج:", error);
@@ -47,8 +49,14 @@ export const useChatState = () => {
     }, [conversations]);
 
     const [activeChatId, setActiveChatId] = useState<string | null>(null);
+    const activeChatIdRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        activeChatIdRef.current = activeChatId;
+    }, [activeChatId]);
+
     const [searchQuery, setSearchQuery] = useState<string>('');
-    
+
     const [messages, setMessages] = useState<Record<string, Message[]>>(() => {
         if (typeof window !== 'undefined') {
             const savedMessages = localStorage.getItem('anybot_offline_messages');
@@ -70,11 +78,32 @@ export const useChatState = () => {
     const [selectedPlatform, setSelectedPlatform] = useState<string>('all');
     const [page, setPage] = useState<number>(1);
     const [hasMore, setHasMore] = useState<boolean>(true);
-    
+
     // === استیت‌های بارگذاری ===
     const [isLoadingChats, setIsLoadingChats] = useState(false);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+
+    useEffect(() => {
+        originalTitleRef.current = document.title;
+
+        const handleFocus = () => {
+            if (blinkIntervalRef.current) {
+                clearInterval(blinkIntervalRef.current);
+                blinkIntervalRef.current = null;
+            }
+
+            hiddenUnreadCountRef.current = 0;
+            document.title = originalTitleRef.current;
+        };
+
+        window.addEventListener('focus', handleFocus);
+
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+            if (blinkIntervalRef.current) clearInterval(blinkIntervalRef.current);
+        };
+    }, []);
 
     // ==========================================
     // 🌟 ۲. منطق دریافت پیام جدید از SignalR
@@ -85,26 +114,46 @@ export const useChatState = () => {
         const currentChats = conversationsRef.current;
         const chatIndex = currentChats.findIndex(c => c.id === chatId);
         const isNewChat = !conversationsRef.current.some(c => c.id === chatId);
-       
+
         if (newMessage.direction === 1) { // 1 = Incoming
             try {
                 // پخش صدای ملایم
                 const audio = new Audio('/sounds/notification.mp3');
                 audio.play().catch(e => console.log("مرورگر از پخش خودکار جلوگیری کرد:", e));
             }
-            catch (error) {}
+            catch (error) { }
 
-            if (typeof document !== 'undefined' && document.hidden && 'Notification' in window && window.Notification.permission === 'granted') {           
-                new (window as any).Notification(`پیام جدید از ${newMessage.senderName || 'مشتری'}`, {
-                        body: newMessage.textContent || 'فایل یا رسانه جدید دریافت شد',
-                        icon: '/favicon.ico'
-                    });
+            if (typeof document !== 'undefined') {
+                if (document.hidden) {
+                    if (chatId !== activeChatIdRef.current) {
+                        hiddenUnreadCountRef.current += 1;
+                        if (!blinkIntervalRef.current) {
+                            let isShowingNew = true;
+
+                            blinkIntervalRef.current = setInterval(() => {
+                                document.title = isShowingNew
+                                    ? `(${hiddenUnreadCountRef.current}) پیام جدید 💬`
+                                    : originalTitleRef.current;
+
+                                isShowingNew = !isShowingNew;
+                            }, 1000);
+                        }
+                    }
+
+                    // نوتیفیکیشن دسکتاپ (بدون تغییر)
+                    if ('Notification' in window && window.Notification.permission === 'granted') {
+                        new (window as any).Notification(`پیام جدید از ${newMessage.senderName || 'مشتری'}`, {
+                            body: newMessage.textContent || 'فایل یا رسانه جدید دریافت شد',
+                            icon: '/favicon.ico'
+                        });
+                    }
                 }
+            }
         }
 
         setMessages((prevMessages) => {
             const currentChatMessages = prevMessages[chatId] || [];
-                if (currentChatMessages.some((msg: Message) => msg.id === newMessage.id)) {
+            if (currentChatMessages.some((msg: Message) => msg.id === newMessage.id)) {
                 return prevMessages;
             }
 
@@ -123,19 +172,18 @@ export const useChatState = () => {
                 senderUserId: newMessage.senderUserId || undefined,
             };
 
-            if (newMessage.direction === 2) { 
-                // دنبال پیامی می‌گردیم که در حالت معلق (Pending) باشد و نوع و متنش با پیامی که از سوکت آمده یکی باشد
-                const pendingMatchIndex = currentChatMessages.findIndex(msg => 
+            if (newMessage.direction === 2) {
+                const pendingMatchIndex = currentChatMessages.findIndex(msg =>
                     (msg.status === 1 || msg.statusName === 'Pending') &&
                     msg.direction === 2 &&
                     msg.type === newMessage.type &&
-                    ((newMessage.textContent && msg.textContent === newMessage.textContent) || 
-                     (newMessage.mediaUrl && msg.mediaUrl === newMessage.mediaUrl))
+                    ((newMessage.textContent && msg.textContent === newMessage.textContent) ||
+                        (newMessage.mediaUrl && msg.mediaUrl === newMessage.mediaUrl))
                 );
 
                 if (pendingMatchIndex !== -1) {
                     const updatedMessages = [...currentChatMessages];
-                    
+
                     updatedMessages[pendingMatchIndex] = {
                         ...mappedMessage,
                         status: (mappedMessage.status === 0 || mappedMessage.status == null) ? 1 : mappedMessage.status,
@@ -159,15 +207,16 @@ export const useChatState = () => {
             // ۲. فوراً کارت موقت را می‌سازیم
             const tempConversation: Conversation = {
                 id: chatId,
-                contactId: '', 
-                contactName: 'در حال دریافت اطلاعات...', 
+                contactId: '',
+                contactName: 'در حال دریافت اطلاعات...',
                 contactPhoneNumber: '...',
-                status: 1, 
+                status: 1,
                 statusName: 'Open',
                 createdAt: newMessage.createdAt,
                 contactUserNameInPlatform: '...',
                 lastMessage: newMessage.textContent || "پیام رسانه",
                 lastMessageDate: newMessage.createdAt,
+                unreadCount: (newMessage.direction === 1 && chatId !== activeChatIdRef.current) ? 1 : 0
             };
 
             // ۳. استیت و رفرنس را دستی و "بدون هیچ تابع واسطه‌ای" آپدیت می‌کنیم تا در لحظه روی صفحه بیاید
@@ -178,7 +227,7 @@ export const useChatState = () => {
             // ۴. حالا که کارت موقت روی صفحه رفت، با خیال راحت به سرور درخواست می‌زنیم
             try {
                 const response = await apiGetConversationDetails<any>(chatId);
-                const realConversation = response?.data || response; 
+                const realConversation = response?.data || response;
 
                 if (realConversation) {
                     // ۵. وقتی جواب سرور آمد، چون زمان گذشته، اینجا منطقی است که از prev استفاده کنیم
@@ -196,7 +245,8 @@ export const useChatState = () => {
                             contactUserNameInPlatform: realConversation.contactUserNameInPlatform || realConversation.ContactUserNameInPlatform || '',
                             lastMessage: newMessage.textContent || "پیام رسانه",
                             lastMessageDate: newMessage.createdAt,
-                            botName: realConversation.botName || realConversation.BotName || ''
+                            botName: realConversation.botName || realConversation.BotName || '',
+                            unreadCount: prev.find(c => c.id === chatId)?.unreadCount || (newMessage.direction === 1 ? 1 : 0)
                         };
                         return [safeConversation, ...filteredChats];
                     });
@@ -204,28 +254,34 @@ export const useChatState = () => {
             } catch (error) {
                 console.error(`خطا در واکشی اطلاعات کامل گفتگوی ${chatId}:`, error);
             }
-        } 
+        }
         else {
             // اگر چت از قبل وجود داشت (چت قدیمی است)
             const chatToUpdate = { ...currentChats[chatIndex] };
-            chatToUpdate.lastMessage = newMessage.textContent || "پیام رسانه"; 
+            chatToUpdate.lastMessage = newMessage.textContent || "پیام رسانه";
             chatToUpdate.lastMessageDate = newMessage.createdAt;
-            
+
+            if (newMessage.direction === 1) {
+                if (chatId !== activeChatIdRef.current) {
+                    chatToUpdate.unreadCount = (chatToUpdate.unreadCount || 0) + 1;
+                }
+            }
+
             const otherChats = currentChats.filter(c => c.id !== chatId);
             const updatedChatsList = [chatToUpdate, ...otherChats];
-            
+
             // مستقیماً آپدیت می‌کنیم
             setConversations(updatedChatsList);
             conversationsRef.current = updatedChatsList;
         }
-       
+
     }, [companyId]);
 
     const fetchCannedResponses = async () => {
         if (!companyId) return;
         try {
             const response = await apiGetCannedResponses(companyId);
-            const items = response || []; 
+            const items = response || [];
             setCannedResponses(items);
         } catch (error) {
             console.error("خطا در به‌روزرسانی پاسخ‌های آماده", error);
@@ -239,7 +295,7 @@ export const useChatState = () => {
 
         setMessages((prevMessages) => {
             const currentChatMessages = prevMessages[chatId] || [];
-            
+
             const incomingId = incomingMsg.id || incomingMsg.Id;
             const incomingExtId = incomingMsg.externalMessageId || incomingMsg.ExternalMessageId;
 
@@ -260,8 +316,8 @@ export const useChatState = () => {
             }
 
             // ۲. پیدا کردن پیام (شکارچی)
-            let targetIndex = currentChatMessages.findIndex(m => 
-                m.id === incomingId || 
+            let targetIndex = currentChatMessages.findIndex(m =>
+                m.id === incomingId ||
                 (m.externalMessageId && incomingExtId && m.externalMessageId === incomingExtId)
             );
 
@@ -269,10 +325,10 @@ export const useChatState = () => {
 
             // ۳. اگر با آیدی پیدا نشد، پیام‌های معلق (ساعت‌دار) را جستجو می‌کنیم
             if (targetIndex === -1 && (incomingMsg.direction === 2 || incomingMsg.Direction === 2)) {
-                targetIndex = currentChatMessages.findIndex(msg => 
+                targetIndex = currentChatMessages.findIndex(msg =>
                     (msg.status === 1 || msg.statusName === 'Pending') && msg.direction === 2
                 );
-                
+
                 if (targetIndex !== -1) {
                     isTemporaryMatch = true;
                 }
@@ -287,11 +343,11 @@ export const useChatState = () => {
             const newMessages = [...currentChatMessages];
             const oldMsg = newMessages[targetIndex];
 
-            newMessages[targetIndex] = { 
-                ...oldMsg, 
+            newMessages[targetIndex] = {
+                ...oldMsg,
                 id: incomingId, // جایگزینی آیدی موقت با آیدی دیتابیس
-                status: finalStatus !== undefined ? finalStatus : oldMsg.status, 
-                statusName: finalStatusName || oldMsg.statusName, 
+                status: finalStatus !== undefined ? finalStatus : oldMsg.status,
+                statusName: finalStatusName || oldMsg.statusName,
                 externalMessageId: incomingExtId || oldMsg.externalMessageId
             };
 
@@ -320,7 +376,7 @@ export const useChatState = () => {
         onMessageUpdated: handleMessageUpdated,
         onConversationUpdated: (chatId: string, action: string, assigneeUserId?: string) => {
             console.log(`وضعیت چت ${chatId} به ${action} تغییر کرد`);
-           
+
             setConversations((currentChats) => {
                 const chatIndex = currentChats.findIndex(c => c.id === chatId);
                 if (chatIndex === -1) return currentChats;
@@ -330,14 +386,14 @@ export const useChatState = () => {
 
                 // اعمال تغییرات دریافتی از SignalR روی استیت
                 if (action === "Assigned") {
-                    chatToUpdate.assigneeUserId = assigneeUserId; 
-                } 
+                    chatToUpdate.assigneeUserId = assigneeUserId;
+                }
                 else if (action === "Unassigned") {
                     chatToUpdate.assigneeUserId = undefined;
                     chatToUpdate.status = 1;
                 }
                 else if (action === "Closed") {
-                    chatToUpdate.assigneeUserId = undefined; 
+                    chatToUpdate.assigneeUserId = undefined;
                     chatToUpdate.status = 0;
                 }
                 else if (action === "Reopened") {
@@ -368,19 +424,19 @@ export const useChatState = () => {
     // ۱. دریافت لیست مکالمات
     useEffect(() => {
         const fetchConversations = async () => {
-            if (!companyId) return; 
+            if (!companyId) return;
 
             if (page === 1) {
                 setIsLoadingChats(true);
             } else {
                 setIsLoadingMore(true);
             }
-            
+
             try {
-                const payload: any = { 
+                const payload: any = {
                     companyId: companyId,
                     pageNumber: page,
-                    pageSize: 10 
+                    pageSize: 10
                 };
 
                 if (selectedPlatform !== 'all') {
@@ -398,7 +454,7 @@ export const useChatState = () => {
                 }
 
                 setHasMore(items.length === 10);
-                
+
             } catch (error) {
                 console.error("خطا در دریافت لیست مکالمات:", error);
             } finally {
@@ -412,15 +468,15 @@ export const useChatState = () => {
 
     const handleSetSelectedPlatform = (platform: string) => {
         setSelectedPlatform(platform);
-        setPage(1); 
-        setConversations([]); 
-        setHasMore(true); 
+        setPage(1);
+        setConversations([]);
+        setHasMore(true);
     };
 
     // 🌟 متد جدید: بارگذاری تاریخچه چت (با مپینگ ضدگلوله برای محافظت از آیکون‌ها)
     const loadChatHistory = async (targetChatId?: string, forceRefresh: boolean = false) => {
         const chatId = targetChatId || activeChatId;
-        
+
         if (!companyId || !chatId) return;
 
         if (!forceRefresh && fetchedChats.current.has(chatId)) return;
@@ -429,19 +485,16 @@ export const useChatState = () => {
         try {
             const response = await apiGetConversationMessages<any>(chatId, { companyId: companyId });
             const items = response?.data?.items || response?.items || [];
-            
+
             // چاپ دیتای خام سرور در کنسول برای دیباگ
             if (items.length > 0) {
                 console.log("📦 دیتای خام یک پیام از سرور:", items[0]);
             }
 
-            // 🌟 مپینگ ضدگلوله: تبدیل اجباری به عدد (Number) برای جلوگیری از باگ‌های تایپ
             const mappedServerItems = items.map((msg: any) => {
-                // استخراج و تبدیل اجباری به عدد
-                debugger
                 const rawDirection = msg.direction !== undefined ? msg.direction : msg.Direction;
                 const rawStatus = msg.status !== undefined ? msg.status : msg.Status;
-                
+
                 const direction = rawDirection !== undefined ? Number(rawDirection) : 1;
                 let currentStatus = rawStatus !== undefined ? Number(rawStatus) : 0;
                 let currentStatusName = msg.statusName || msg.StatusName || '';
@@ -453,7 +506,7 @@ export const useChatState = () => {
                         currentStatusName = 'Failed';
                     }
                     else if (currentStatus === 0 || isNaN(currentStatus)) {
-                        currentStatus = 2; 
+                        currentStatus = 2;
                         currentStatusName = 'Sent';
                     }
                 }
@@ -474,24 +527,24 @@ export const useChatState = () => {
             });
 
             const reversedServerItems = mappedServerItems.reverse();
-            
+
             setMessages(prev => {
                 const currentLocalMessages = prev[chatId] || [];
-                
+
                 const localUnsentMessages = currentLocalMessages.filter(
                     msg => msg.status === 0 || msg.status === 1 || msg.statusName === 'Pending'
                 );
 
                 const validLocalMessages = localUnsentMessages.filter((localMsg: Message) => {
-                    const isAlreadyInServer = reversedServerItems.some((serverMsg: Message) => 
-                        serverMsg.direction === 2 && 
+                    const isAlreadyInServer = reversedServerItems.some((serverMsg: Message) =>
+                        serverMsg.direction === 2 &&
                         serverMsg.type === localMsg.type &&
                         (
-                            (localMsg.textContent && serverMsg.textContent === localMsg.textContent) || 
+                            (localMsg.textContent && serverMsg.textContent === localMsg.textContent) ||
                             (localMsg.mediaUrl && serverMsg.mediaUrl === localMsg.mediaUrl)
                         )
                     );
-                    return !isAlreadyInServer; 
+                    return !isAlreadyInServer;
                 });
 
                 const mergedMessages = [...reversedServerItems, ...validLocalMessages];
@@ -523,6 +576,10 @@ export const useChatState = () => {
     useEffect(() => {
         if (activeChatId) {
             loadChatHistory(activeChatId);
+
+            setConversations(prev => prev.map(chat =>
+                chat.id === activeChatId ? { ...chat, unreadCount: 0 } : chat
+            ));
         }
     }, [activeChatId, companyId]);
 
@@ -539,24 +596,24 @@ export const useChatState = () => {
                 assignedByUserId: currentUserId,
                 companyId: companyId
             });
-            
+
             // آپدیت سریع استیت برای اعمال تغییر در UI خود شخص بدون انتظار برای سوکت
             setConversations((currentChats) => {
                 const chatIndex = currentChats.findIndex(c => c.id === activeChatId);
                 if (chatIndex === -1) return currentChats;
 
                 const updatedChats = [...currentChats];
-                updatedChats[chatIndex] = { 
-                    ...updatedChats[chatIndex], 
-                    assigneeUserId: operatorId 
+                updatedChats[chatIndex] = {
+                    ...updatedChats[chatIndex],
+                    assigneeUserId: operatorId
                 };
                 return updatedChats;
             });
 
             toast.push(
                 React.createElement(
-                    Notification, 
-                    { title: 'موفق', type: 'success' }, 
+                    Notification,
+                    { title: 'موفق', type: 'success' },
                     'این گفتگو با موفقیت به شما اختصاص یافت.'
                 ),
                 { placement: 'top-center' }
@@ -565,8 +622,8 @@ export const useChatState = () => {
             console.error("خطا در اختصاص گفتگو:", error);
             toast.push(
                 React.createElement(
-                    Notification, 
-                    { title: 'خطا', type: 'danger' }, 
+                    Notification,
+                    { title: 'خطا', type: 'danger' },
                     'تخصیص گفتگو انجام نشد. ممکن است شخص دیگری آن را برداشته باشد.'
                 ),
                 { placement: 'top-center' }
@@ -578,30 +635,30 @@ export const useChatState = () => {
         if (!companyId || !activeChatId) return;
 
         try {
-                await apiUnAssignConversation({
-                    conversationId: activeChatId,
-                    assigneeUserId: operatorId,
-                    assignedByUserId: currentUserId,
-                    companyId: companyId
-                });
+            await apiUnAssignConversation({
+                conversationId: activeChatId,
+                assigneeUserId: operatorId,
+                assignedByUserId: currentUserId,
+                companyId: companyId
+            });
 
-                setConversations((currentChats) => {
-                    const chatIndex = currentChats.findIndex(c => c.id === activeChatId);
-                    if (chatIndex === -1) return currentChats;
+            setConversations((currentChats) => {
+                const chatIndex = currentChats.findIndex(c => c.id === activeChatId);
+                if (chatIndex === -1) return currentChats;
 
-                    const updatedChats = [...currentChats];
-                    updatedChats[chatIndex] = { 
-                        ...updatedChats[chatIndex], 
-                        assigneeUserId: undefined,
-                        status: 0
-                    };
-                    return updatedChats;
-                });
+                const updatedChats = [...currentChats];
+                updatedChats[chatIndex] = {
+                    ...updatedChats[chatIndex],
+                    assigneeUserId: undefined,
+                    status: 0
+                };
+                return updatedChats;
+            });
 
             toast.push(
                 React.createElement(
-                    Notification, 
-                    { title: 'موفق', type: 'success' }, 
+                    Notification,
+                    { title: 'موفق', type: 'success' },
                     'گفتگو با موفقیت پایان یافت و به ربات سپرده شد.'
                 ),
                 { placement: 'top-center' }
@@ -610,8 +667,8 @@ export const useChatState = () => {
             console.error("خطا در بستن گفتگو:", error);
             toast.push(
                 React.createElement(
-                    Notification, 
-                    { title: 'خطا', type: 'danger' }, 
+                    Notification,
+                    { title: 'خطا', type: 'danger' },
                     'خطا در بستن گفتگو. لطفاً دوباره تلاش کنید.'
                 ),
                 { placement: 'top-center' }
@@ -652,7 +709,7 @@ export const useChatState = () => {
                 createdAt: new Date().toISOString(),
                 senderUserId: currentUserId
             };
-            
+
             setMessages(prev => ({
                 ...prev,
                 [activeChatId]: [...(prev[activeChatId] || []), tempMessage]
@@ -672,8 +729,8 @@ export const useChatState = () => {
 
             toast.push(
                 React.createElement(
-                    Notification, 
-                    { title: 'موفق', type: 'success' }, 
+                    Notification,
+                    { title: 'موفق', type: 'success' },
                     'گفتگو با موفقیت پایان یافت .'
                 ),
                 { placement: 'top-center' }
@@ -682,8 +739,8 @@ export const useChatState = () => {
             console.error("خطا در بستن گفتگو:", error);
             toast.push(
                 React.createElement(
-                    Notification, 
-                    { title: 'خطا', type: 'danger' }, 
+                    Notification,
+                    { title: 'خطا', type: 'danger' },
                     'خطا در بستن گفتگو. لطفاً دوباره تلاش کنید.'
                 ),
                 { placement: 'top-center' }
@@ -706,11 +763,11 @@ export const useChatState = () => {
         const tempMessage: Message = {
             id: tempId,
             conversationId: activeChatId,
-            direction: 2, 
+            direction: 2,
             directionName: 'Outgoing',
             type: 1,
             typeName: 'Text',
-            status: 1, 
+            status: 1,
             statusName: 'Pending',
             textContent: textContent,
             createdAt: new Date().toISOString(),
@@ -724,11 +781,11 @@ export const useChatState = () => {
 
         try {
             const response = await apiSendOutgoingMessage<any>(payload);
-            const newId = response?.data || response; 
+            const newId = response?.data || response;
 
             setMessages(prev => {
                 const currentMsgs = prev[activeChatId] || [];
-                
+
                 // 🌟 آیا سوکت (SignalR) سریع‌تر از این ریکوئست عمل کرده و این پیام را اضافه کرده است؟
                 const alreadyAddedBySocket = currentMsgs.some(msg => msg.id === newId);
 
@@ -742,11 +799,11 @@ export const useChatState = () => {
                     // اگر ما زودتر رسیدیم، آیدی پیام موقت را آپدیت می‌کنیم
                     return {
                         ...prev,
-                        [activeChatId]: currentMsgs.map(msg => 
-                            msg.id === tempId 
-                            // ⚠️ نکته مهم: استاتوس را 2 نمی‌کنیم! چون هنگ فایر تازه می‌خواهد ارسالش کند.
-                            ? { ...msg, id: newId, status: 1, statusName: 'Pending' } 
-                            : msg
+                        [activeChatId]: currentMsgs.map(msg =>
+                            msg.id === tempId
+                                // ⚠️ نکته مهم: استاتوس را 2 نمی‌کنیم! چون هنگ فایر تازه می‌خواهد ارسالش کند.
+                                ? { ...msg, id: newId, status: 1, statusName: 'Pending' }
+                                : msg
                         )
                     };
                 }
@@ -756,7 +813,7 @@ export const useChatState = () => {
             console.error("خطا در ارسال پیام:", error);
             setMessages(prev => ({
                 ...prev,
-                [activeChatId]: prev[activeChatId].map(msg => 
+                [activeChatId]: prev[activeChatId].map(msg =>
                     msg.id === tempMessage.id ? { ...msg, status: 0, statusName: 'Failed' } : msg
                 )
             }));
@@ -769,7 +826,7 @@ export const useChatState = () => {
 
         const localPreviewUrl = URL.createObjectURL(file);
 
-        let msgTypeNumber = 2; 
+        let msgTypeNumber = 2;
         if (type === 'video') msgTypeNumber = 3;
         if (type === 'document') msgTypeNumber = 4;
         if (type === 'voice') msgTypeNumber = 5;
@@ -779,11 +836,11 @@ export const useChatState = () => {
         const tempMessage = {
             id: tempId,
             conversationId: activeChatId,
-            direction: 2, 
+            direction: 2,
             directionName: 'Outgoing',
-            type: msgTypeNumber, 
-            typeName: type, 
-            status: 1, 
+            type: msgTypeNumber,
+            typeName: type,
+            status: 1,
             statusName: 'Pending',
             mediaUrl: localPreviewUrl,
             createdAt: new Date().toISOString(),
@@ -801,9 +858,9 @@ export const useChatState = () => {
         try {
             const formData = new FormData();
             formData.append('file', file);
-            
+
             const uploadResponse = await apiUploadMedia(formData);
-            
+
             finalUploadedUrl = uploadResponse?.url || (uploadResponse as any)?.url;
 
             if (!finalUploadedUrl) {
@@ -815,42 +872,42 @@ export const useChatState = () => {
                 companyId: companyId,
                 senderUserId: currentUserId,
                 messageType: msgTypeNumber,
-                mediaUrl: finalUploadedUrl 
+                mediaUrl: finalUploadedUrl
             };
 
             const sendResponse = await apiSendOutgoingMessage<any>(payload);
-            const newId = sendResponse?.data?.id || sendResponse?.id || sendResponse?.data; 
+            const newId = sendResponse?.data?.id || sendResponse?.id || sendResponse?.data;
 
             setMessages(prev => ({
                 ...prev,
-                [activeChatId]: prev[activeChatId].map(msg => 
-                    msg.id === tempMessage.id 
-                    ? { 
-                        ...msg, 
-                        id: newId, 
-                        status: 1, 
-                        statusName: 'Pending', 
-                        mediaUrl: finalUploadedUrl 
-                    } 
-                    : msg
+                [activeChatId]: prev[activeChatId].map(msg =>
+                    msg.id === tempMessage.id
+                        ? {
+                            ...msg,
+                            id: newId,
+                            status: 1,
+                            statusName: 'Pending',
+                            mediaUrl: finalUploadedUrl
+                        }
+                        : msg
                 )
             }));
 
         } catch (error: any) {
             console.error("خطا در جریان آپلود و ارسال فایل:", error);
-            
+
             if (!finalUploadedUrl || error.message === "UPLOAD_FAILED") {
                 // حالت اول: آپلود شکست خورده است
                 setMessages(prev => ({
                     ...prev,
                     [activeChatId]: prev[activeChatId].filter(msg => msg.id !== tempMessage.id)
                 }));
-                
+
                 // 👇 استفاده از React.createElement به جای JSX
                 toast.push(
                     React.createElement(
-                        Notification, 
-                        { title: 'خطای آپلود', type: 'danger' }, 
+                        Notification,
+                        { title: 'خطای آپلود', type: 'danger' },
                         'ارتباط با سرور برقرار نشد و فایل آپلود نشد. لطفاً مجدداً تلاش کنید.'
                     ),
                     { placement: 'top-center' }
@@ -860,15 +917,15 @@ export const useChatState = () => {
                 // حالت دوم: آپلود موفق بوده اما ثبت پیام خطا داده است
                 setMessages(prev => ({
                     ...prev,
-                    [activeChatId]: prev[activeChatId].map(msg => 
-                        msg.id === tempMessage.id 
-                        ? { 
-                            ...msg, 
-                            status: 0, 
-                            statusName: 'Failed',
-                            mediaUrl: finalUploadedUrl 
-                        } 
-                        : msg
+                    [activeChatId]: prev[activeChatId].map(msg =>
+                        msg.id === tempMessage.id
+                            ? {
+                                ...msg,
+                                status: 0,
+                                statusName: 'Failed',
+                                mediaUrl: finalUploadedUrl
+                            }
+                            : msg
                     )
                 }));
             }
@@ -881,7 +938,7 @@ export const useChatState = () => {
         if (!companyId || !activeChatId) return;
 
         const messageToResend = currentMessages.find(msg => msg.id === messageId);
-        
+
         if (!messageToResend || (!messageToResend.textContent && messageToResend.type === 1)) return;
         if (messageToResend.type !== 1 && messageToResend.mediaUrl?.startsWith('blob:')) {
             alert("خطای آپلود: فایل به طور کامل در سرور آپلود نشده است. لطفاً پیام را حذف کرده و مجدداً ارسال کنید.");
@@ -894,23 +951,23 @@ export const useChatState = () => {
             conversationId: activeChatId,
             companyId: companyId,
             senderUserId: currentUserId,
-            messageType: messageToResend.type || 1, 
+            messageType: messageToResend.type || 1,
             textContent: messageToResend.type === 1 ? messageToResend.textContent : undefined,
             mediaUrl: messageToResend.type !== 1 ? messageToResend.mediaUrl : undefined
         };
         const freshDate = new Date().toISOString();
         setMessages(prev => {
             const currentMsgs = prev[activeChatId] || [];
-            
+
             // الف) پیام خطاخورده قدیمی را از جای قبلی‌اش حذف می‌کنیم
             const filteredMsgs = currentMsgs.filter(msg => msg.id !== messageId);
-            
+
             // ب) پیام را با وضعیت ساعت و تاریخ جدید می‌سازیم
-            const updatedMsg = { 
-                ...messageToResend, 
-                status: 1, 
-                statusName: 'Pending', 
-                createdAt: freshDate 
+            const updatedMsg = {
+                ...messageToResend,
+                status: 1,
+                statusName: 'Pending',
+                createdAt: freshDate
             };
 
             // ج) آن را به عنوان آخرین پیام به انتهای آرایه اضافه می‌کنیم
@@ -923,7 +980,7 @@ export const useChatState = () => {
         try {
             // ۲. ساخت پیام جدید در دیتابیس
             const response = await apiSendOutgoingMessage<any>(payload);
-            const newId = response?.data?.id || response?.data || response?.id || response; 
+            const newId = response?.data?.id || response?.data || response?.id || response;
 
             // ۳. مدیریت هوشمندانه استیت برای جلوگیری از تداخل با SignalR
             setMessages(prev => {
@@ -940,7 +997,7 @@ export const useChatState = () => {
                     // اگر ما زودتر رسیدیم، آیدی را جایگزین می‌کنیم اما استاتوس را 1 (ساعت) نگه می‌داریم
                     return {
                         ...prev,
-                        [activeChatId]: currentMsgs.map(msg => 
+                        [activeChatId]: currentMsgs.map(msg =>
                             msg.id === messageId ? { ...msg, id: newId, status: 1, statusName: 'Pending' } : msg
                         )
                     };
@@ -948,7 +1005,7 @@ export const useChatState = () => {
             });
 
             try {
-                await apiDeleteMessage(messageId); 
+                await apiDeleteMessage(messageId);
                 console.log(`پیام خطاخورده قدیمی (${messageId}) با موفقیت از دیتابیس حذف شد.`);
             } catch (delErr) {
                 console.error("پیام جدید ارسال شد اما حذف پیام خطاخورده قدیمی از دیتابیس شکست خورد", delErr);
@@ -956,10 +1013,10 @@ export const useChatState = () => {
 
         } catch (error) {
             console.error("ارسال مجدد باز هم با خطا مواجه شد", error);
-            
+
             setMessages(prev => ({
                 ...prev,
-                [activeChatId]: (prev[activeChatId] || []).map(msg => 
+                [activeChatId]: (prev[activeChatId] || []).map(msg =>
                     msg.id === messageId ? { ...msg, status: 0, statusName: 'Failed' } : msg
                 )
             }));
@@ -969,15 +1026,15 @@ export const useChatState = () => {
     const DeleteMessage = async (messageId: string) => {
         try {
             console.log("در حال ارسال درخواست حذف به سرور برای پیام:", messageId);
-            
+
             // ۱. 🌟 پیام مورد نظر را از توی State پیدا می‌کنیم
             if (!activeChatId) return;
-            
+
             // فرض می‌کنیم متغیر استیت شما که کل پیام‌ها رو نگه میداره messages باشه
             // (اگه اسمش چیز دیگه‌ایه تغییرش بده)
             const currentChatMessages = messages[activeChatId] || [];
             const targetMessage = currentChatMessages.find((msg: Message) => msg.id === messageId);
-            
+
             if (!targetMessage) {
                 console.error("پیام مورد نظر برای حذف پیدا نشد!");
                 return;
@@ -985,7 +1042,7 @@ export const useChatState = () => {
 
             // ۲. 🌟 آدرس فایل رو از خودِ پیام استخراج می‌کنیم
             // ⚠️ مهم: بررسی کنید اسم فیلد فایل در اینترفیس Message شما چیست (fileUrl، mediaUrl یا ...)
-            const fileUrlToDelete = targetMessage.mediaUrl; 
+            const fileUrlToDelete = targetMessage.mediaUrl;
 
             // ۳. حذف فایل از سرور (اگر فایلی داشت)
             if (fileUrlToDelete && typeof fileUrlToDelete === 'string' && !fileUrlToDelete.startsWith('blob:')) {
@@ -998,9 +1055,9 @@ export const useChatState = () => {
                     console.error("خطا در حذف فایل از سرور:", error);
                 }
             }
-            
+
             // ۴. درخواست حذف خود پیام از دیتابیس
-            await apiDeleteMessage(messageId);       
+            await apiDeleteMessage(messageId);
 
             // ۵. آپدیت رابط کاربری و حذف پیام از صفحه
             setMessages((prevMessages: Record<string, Message[]>) => {
@@ -1020,8 +1077,8 @@ export const useChatState = () => {
     };
 
     const handleEndConversation = async () => {
-        const currentChatId = activeChat?.id; 
-        
+        const currentChatId = activeChat?.id;
+
         if (!companyId || !activeChatId) return;
         if (!currentChatId) return;
 
@@ -1030,32 +1087,32 @@ export const useChatState = () => {
 
             const isMessageSent = await sendMessage(goodbyeMsg);
             if (isMessageSent) {
-            await apiCloseConversation({
-                conversationId: activeChatId,
-                companyId: companyId
-            });
+                await apiCloseConversation({
+                    conversationId: activeChatId,
+                    companyId: companyId
+                });
 
-            if (setConversations) {
-                setConversations(prev => prev.filter(c => c.id !== currentChatId));
-            }
-            
-            if (setActiveChatId) {
-                setActiveChatId(null);
-            }
-            toast.push(
-                React.createElement(
-                    Notification, 
-                    { title: 'موفقیت', type: 'success' }, 
-                    'مکالمه پایان یافت و پیام خداحافظی ارسال شد.'
-                ),
-                { placement: 'top-center' }
-            );
-        }
-         else {
+                if (setConversations) {
+                    setConversations(prev => prev.filter(c => c.id !== currentChatId));
+                }
+
+                if (setActiveChatId) {
+                    setActiveChatId(null);
+                }
                 toast.push(
                     React.createElement(
-                        Notification, 
-                        { title: 'خطا', type: 'danger' }, 
+                        Notification,
+                        { title: 'موفقیت', type: 'success' },
+                        'مکالمه پایان یافت و پیام خداحافظی ارسال شد.'
+                    ),
+                    { placement: 'top-center' }
+                );
+            }
+            else {
+                toast.push(
+                    React.createElement(
+                        Notification,
+                        { title: 'خطا', type: 'danger' },
                         'ارسال پیام خداحافظی با مشکل مواجه شد. پرونده مکالمه بسته نشد.'
                     ),
                     { placement: 'top-center' }
@@ -1064,12 +1121,12 @@ export const useChatState = () => {
 
         } catch (error) {
             console.error(error);
-            
+
             // نمایش پیام خطا با فرمت React.createElement
             toast.push(
                 React.createElement(
-                    Notification, 
-                    { title: 'خطا', type: 'danger' }, 
+                    Notification,
+                    { title: 'خطا', type: 'danger' },
                     'مشکلی در پایان دادن به مکالمه پیش آمد.'
                 ),
                 { placement: 'top-center' }
@@ -1090,11 +1147,11 @@ export const useChatState = () => {
 
             // بسته به ساختار خروجی اکسیس شما، آرایه را پیدا می‌کنیم
             const contextMessages = response || [];
-            
+
             if (contextMessages.length > 0) {
                 setMessages(prev => {
                     const currentLocalMessages = prev[activeChatId] || [];
-                    
+
                     // ۱. ترکیب پیام‌های قبلی موجود در صفحه با پیام‌های جدیدِ دریافت شده
                     const mergedMessages = [...currentLocalMessages, ...contextMessages];
 
@@ -1125,25 +1182,25 @@ export const useChatState = () => {
     // محاسبات محلی برای فرمت‌دهی داده‌ها
     const activeChat = conversations.find(c => c.id === activeChatId);
     const currentMessages = activeChatId ? (messages[activeChatId] || []) : [];
-    
-    const filteredChats = conversations.filter(c => 
+
+    const filteredChats = conversations.filter(c =>
         (c.contactName?.includes(searchQuery) || c.contactPhoneNumber?.includes(searchQuery))
     );
 
-    
+
     return {
         conversations: filteredChats,
         activeChat,
         currentMessages,
         currentUserId,
-        
+
         activeChatId,
         setActiveChatId,
         searchQuery,
         setSearchQuery,
-        
+
         selectedPlatform,
-        setSelectedPlatform: handleSetSelectedPlatform, 
+        setSelectedPlatform: handleSetSelectedPlatform,
         page,
         setPage,
         hasMore,

@@ -5,7 +5,12 @@ import {
     HiPlus,
     HiOutlineChevronRight,
     HiOutlineChevronLeft,
-    HiOutlineUsers
+    HiOutlineUsers,
+    HiOutlineLightningBolt,
+    HiOutlineClock,
+    HiOutlinePause,
+    HiOutlineBan,
+    HiOutlineCheckCircle
 } from 'react-icons/hi';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -77,7 +82,6 @@ const CampaignList = () => {
         }
     });
 
-    // 🌟 واکشی اطلاعات با در نظر گرفتن شماره صفحه
     useEffect(() => {
         const fetchCampaigns = async () => {
             setIsLoading(true);
@@ -90,7 +94,6 @@ const CampaignList = () => {
 
                 const response: any = await apiSearchCampaigns(params);
                 
-                // استخراج لیست آیتم‌ها و تعداد کل
                 const fetchedCampaigns = response?.data?.items || response?.items || response?.data || [];
                 const total = response?.data?.totalCount || response?.totalCount || 0;
                 
@@ -106,7 +109,6 @@ const CampaignList = () => {
         fetchCampaigns();
     }, [companyId, pageIndex, pageSize]);
 
-    // 🌟 رندر وضعیت با استفاده از حروف (مینیمال و زیبا)
     const renderStatusLetter = (status: number) => {
         switch (status) {
             case CampaignStatus.Draft:
@@ -174,12 +176,10 @@ const CampaignList = () => {
             e.stopPropagation();
         }
         
-        // آیدی کمپین را تنظیم کن و مودال را باز کن
         setViewModalCampaignId(campaignId);
         setIsViewModalOpen(true);
     };
 
-    // محاسبه تعداد کل صفحات
     const totalPages = Math.ceil(totalItems / pageSize) || 1;
 
     return (
@@ -228,7 +228,6 @@ const CampaignList = () => {
                                     const isEditable = campaign.status === CampaignStatus.Draft || campaign.status === CampaignStatus.Scheduled;
                                     return(
                                         <Tr key={campaign.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
-                                            {/* 🌟 دایره وضعیت در ستون اول */}
                                             <Td className="text-center">
                                                 <div className="flex justify-center">
                                                     {renderStatusLetter(campaign.status)}
@@ -247,24 +246,66 @@ const CampaignList = () => {
                                             <Td>
                                                 <span className="text-sm text-gray-600 dark:text-gray-400">{campaign.botName}</span>
                                             </Td>
-                                            <Td>
-                                                {campaign.scheduledAt ? (
-                                                    <div className="flex flex-col gap-0.5">
-                                                        <span className="block w-full text-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                                {formatPersianDateTime(campaign.scheduledAt)}
+                                           <td className="px-6 py-4">
+                                                <div className="flex flex-col gap-1.5">
+                                                    {campaign.status === 3 || campaign.status === 7 ? (
+                                                        <span className="inline-flex items-center gap-1.5 text-blue-600 dark:text-blue-400 text-[11px] font-bold w-max">
+                                                            <span className="relative flex h-2 w-2">
+                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                                            </span>
+                                                            {campaign.status === 7 ? 'در حال تلاش مجدد...' : 'در حال ارسال...'}
                                                         </span>
-                                                        <span className="flex w-full items-center justify-center px-2 py-1.5 text-xs font-bold text-slate-600 bg-slate-100 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 rounded-md mt-1">
-                                                                    زمان‌بندی شده
+                                                    ) : campaign.status === 5 ? (
+                                                        <span className="inline-flex items-center gap-1 text-rose-500 dark:text-rose-400 text-[11px] font-bold w-max">
+                                                            <HiOutlinePause className="text-[14px]" /> متوقف شده
                                                         </span>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex flex-col gap-0.5">
-                                                        <span className="flex items-center justify-center px-2 py-1 text-xs font-bold text-slate-600 bg-slate-100 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 rounded-md w-full mt-1">
-                                                                به محض تایید کمپین
+                                                    ) : campaign.status === 4 ? (
+                                                        <span className="inline-flex items-center gap-1 text-emerald-500 dark:text-emerald-400 text-[11px] font-bold w-max">
+                                                            <HiOutlineCheckCircle className="text-[14px]" /> پایان یافته
                                                         </span>
-                                                    </div>
-                                                )}
-                                            </Td>
+                                                    ) : campaign.status === 6 ? (
+                                                        <span className="inline-flex items-center gap-1 text-gray-500 dark:text-gray-400 text-[11px] font-bold w-max">
+                                                            <HiOutlineBan className="text-[14px]" /> لغو شده
+                                                        </span>
+                                                    ) : campaign.status === 2 ? (
+                                                        <span className="inline-flex items-center gap-1 text-indigo-500 dark:text-indigo-400 text-[11px] font-bold w-max">
+                                                            <HiOutlineClock className="text-[14px]" /> در انتظار ارسال
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 text-amber-500 dark:text-amber-400 text-[11px] font-bold w-max">
+                                                            <HiOutlineLightningBolt className="text-[14px]" /> پیش‌نویس (فوری)
+                                                        </span>
+                                                    )}
+                                                    {campaign.status === 1 ? (
+                                                        <span className="text-xs font-semibold text-gray-400 mt-1">در انتظار تایید گیرندگان</span>
+                                                    ) : campaign.status === 2 && campaign.scheduledAt ? (
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
+                                                                {new Date(campaign.scheduledAt).toLocaleDateString('fa-IR', { month: 'long', day: 'numeric' })}
+                                                            </span>
+                                                            <span className="text-[11px] font-semibold text-gray-500 mt-0.5">
+                                                                برنامه‌ریزی برای ساعت <span className="font-bold text-gray-600 dark:text-gray-300">{new Date(campaign.scheduledAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                            </span>
+                                                        </div>
+                                                    ) : campaign.startedAt ? (
+                                                        <div className="flex flex-col">
+                                                            <span className={`text-sm font-bold ${campaign.status === 4 ? 'text-emerald-700 dark:text-emerald-500' : 'text-gray-800 dark:text-gray-200'}`}>
+                                                                {new Date(campaign.startedAt).toLocaleDateString('fa-IR', { month: 'long', day: 'numeric' })}
+                                                            </span>
+                                                            <span className="text-[11px] font-semibold text-gray-500 mt-0.5 flex items-center gap-1">
+                                                                {campaign.status === 4 ? 'تکمیل ارسال در' : campaign.status === 5 ? 'زمانِ استارت اولیه:' : 'آغاز ارسال از'} 
+                                                                <span className="font-bold text-gray-700 dark:text-gray-300">
+                                                                    {new Date(campaign.startedAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })}
+                                                                </span>
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-xs font-semibold text-gray-400 mt-1">نامشخص</span>
+                                                    )}
+
+                                                </div>
+                                            </td>
                                             <Td>
                                                 <div 
                                                     onClick={(e) => handleOpenContactsModal(campaign.id, e)}
