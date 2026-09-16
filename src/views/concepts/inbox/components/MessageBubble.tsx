@@ -86,7 +86,6 @@ export const MessageBubble = ({ message, currentUserId, onResend, onDelete, isFi
 
     const isOutgoing = message.direction === 2;
     const isBot = isOutgoing && !message.senderUserId;
-    debugger
     const isFailed = message.status === 0 || message.status === 1;
 
     const alignmentClass = isOutgoing 

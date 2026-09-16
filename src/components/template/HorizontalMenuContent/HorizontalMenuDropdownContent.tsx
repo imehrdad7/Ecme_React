@@ -182,7 +182,7 @@ const ColumnsLayout = (
                                                     }
                                                     icon={
                                                         navigationIcon[
-                                                            subNav.icon
+                                                        subNav.icon
                                                         ] || <TbCircle />
                                                     }
                                                     title={t(
@@ -192,7 +192,7 @@ const ColumnsLayout = (
                                                     description={t(
                                                         subNav.meta?.description
                                                             ?.translateKey ||
-                                                            '',
+                                                        '',
                                                         subNav.meta?.description
                                                             ?.label || '',
                                                     )}
@@ -332,7 +332,7 @@ const TabLayout = ({
     const [activeKey, setActiveKey] = useState(
         navigationTree.some((nav) => nav.key === routeParentKey)
             ? routeParentKey
-            : '' || navigationTree[0].key,
+            : navigationTree[0].key
     )
 
     return (
@@ -366,7 +366,7 @@ const TabLayout = ({
                                                     size={40}
                                                     icon={
                                                         navigationIcon[
-                                                            nav.icon
+                                                        nav.icon
                                                         ] || <TbCircle />
                                                     }
                                                     shape="round"
@@ -383,7 +383,7 @@ const TabLayout = ({
                                                     {t(
                                                         nav.meta?.description
                                                             ?.translateKey ||
-                                                            '',
+                                                        '',
                                                         nav.meta?.description
                                                             ?.label || '',
                                                     )}
@@ -403,50 +403,50 @@ const TabLayout = ({
                     nav.key === activeKey &&
                     nav.type === NAV_ITEM_TYPE_COLLAPSE,
             ) && (
-                <div className="ltr:border-l rtl:border-r border-gray-200 dark:border-gray-800 p-6">
-                    <div
-                        className={classNames(
-                            'grid gap-x-8 flex-1',
-                            gridClasses[columns]?.grid,
-                            gridClasses[columns]?.width,
-                        )}
-                    >
-                        {navigationTree
-                            .find((nav) => nav.key === activeKey)
-                            ?.subMenu.map((nav) => (
-                                <AuthorityCheck
-                                    key={nav.key}
-                                    userAuthority={userAuthority}
-                                    authority={nav.authority}
-                                >
-                                    <HorizontalMenuNavLink
-                                        path={nav.path}
-                                        isExternalLink={nav.isExternalLink}
-                                        className="gap-2 group"
-                                        onClick={() => onDropdownClose()}
+                    <div className="ltr:border-l rtl:border-r border-gray-200 dark:border-gray-800 p-6">
+                        <div
+                            className={classNames(
+                                'grid gap-x-8 flex-1',
+                                gridClasses[columns]?.grid,
+                                gridClasses[columns]?.width,
+                            )}
+                        >
+                            {navigationTree
+                                .find((nav) => nav.key === activeKey)
+                                ?.subMenu.map((nav) => (
+                                    <AuthorityCheck
+                                        key={nav.key}
+                                        userAuthority={userAuthority}
+                                        authority={nav.authority}
                                     >
-                                        <div
-                                            className={classNames(
-                                                'flex items-center gap-2 h-[42px] heading-text group-hover:text-primary',
-                                                routeKey === nav.key &&
-                                                    'text-primary',
-                                            )}
+                                        <HorizontalMenuNavLink
+                                            path={nav.path}
+                                            isExternalLink={nav.isExternalLink}
+                                            className="gap-2 group"
+                                            onClick={() => onDropdownClose()}
                                         >
-                                            <span className="text-xl">
-                                                {navigationIcon[nav.icon] || (
-                                                    <TbCircle />
+                                            <div
+                                                className={classNames(
+                                                    'flex items-center gap-2 h-[42px] heading-text group-hover:text-primary',
+                                                    routeKey === nav.key &&
+                                                    'text-primary',
                                                 )}
-                                            </span>
-                                            <span>
-                                                {t(nav.translateKey, nav.title)}
-                                            </span>
-                                        </div>
-                                    </HorizontalMenuNavLink>
-                                </AuthorityCheck>
-                            ))}
+                                            >
+                                                <span className="text-xl">
+                                                    {navigationIcon[nav.icon] || (
+                                                        <TbCircle />
+                                                    )}
+                                                </span>
+                                                <span>
+                                                    {t(nav.translateKey, nav.title)}
+                                                </span>
+                                            </div>
+                                        </HorizontalMenuNavLink>
+                                    </AuthorityCheck>
+                                ))}
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
         </div>
     )
 }

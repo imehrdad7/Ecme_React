@@ -45,22 +45,13 @@ export default function Footer({
 }: FooterProps) {
     const location = useLocation()
 
-    // 🌟 لیست هوشمند آدرس‌هایی که فوتر نباید در آن‌ها نمایش داده شود
     const hiddenPaths = [
-        // ۱. آدرس‌های کاملاً ثابت (دقت کنید که بین /^ و $/ قرار می‌گیرند)
         /^\/concepts\/inbox$/,
         /^\/chat$/,
-        
-        // ۲. آدرس‌های داینامیک (بخش متغیر با [a-zA-Z0-9-]+ جایگزین شده است)
-        // این الگو آدرسِ کانتکت‌های هر کمپینی با هر آیدی‌ای را مخفی می‌کند:
+        /^\/concepts\/bots\/bot-create$/,
         /^\/concepts\/campaigns\/[a-zA-Z0-9-]+\/contacts\/?$/,
-
-        // 💡 راهنمای اضافه کردن در آینده:
-        // اگر خواستید صفحه ویرایشِ کمپین را هم مخفی کنید این را اضافه می‌کنید:
-        // /^\/concepts\/campaigns\/[a-zA-Z0-9-]+\/edit\/?$/,
     ]
 
-    // 👈 بررسی اینکه آیا مسیر فعلی با حداقل یکی از الگوهای بالا همخوانی دارد یا خیر
     const shouldHide = hiddenPaths.some(pattern => pattern.test(location.pathname))
 
     if (shouldHide) {

@@ -8,7 +8,8 @@ export type AppConfig = {
 }
 
 const appConfig: AppConfig = {
-  apiPrefix: 'http://192.168.1.24:5172',
+  //apiPrefix: 'http://172.27.32.1:5173',
+  apiPrefix: 'http://localhost:5172',
  // apiPrefix: 'http://192.168.1.132:5172',
 
   //apiPrefix: 'http://172.18.0.1:5172',

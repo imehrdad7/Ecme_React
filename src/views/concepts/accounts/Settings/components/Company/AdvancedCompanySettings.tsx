@@ -9,7 +9,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { z } from 'zod'
 import type { ZodType } from 'zod'
 import { useSessionUser } from '@/store/authStore'
-import { apiGetCompany , apiUpdateCompanySettings } from '@/services/CompanyService'
+import { apiUpdateCompanySettings } from '@/services/CompanyService'
 
 type AdvancedSettingsSchema = {
     autoGoodbyeMessage: string
@@ -21,7 +21,7 @@ const validationSchema: ZodType<AdvancedSettingsSchema> = z.object({
 
 const AdvancedCompanySettings = ({ onBack }: { onBack: () => void }) => {
     const { user, setUser } = useSessionUser() 
-    const [isLoadingData, setIsLoadingData] = useState(false)
+    const [isLoadingData] = useState(false)
 
     const {
         handleSubmit,

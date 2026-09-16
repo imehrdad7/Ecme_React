@@ -52,7 +52,7 @@ class SocketManager {
 
         try {
             await this.connection.start();
-            console.log("⚡ اتصال واحد SignalR (AppHub) با موفقیت برقرار شد.");
+            console.log("⚡ اتصال واحد SignalR (App_Hub) با موفقیت برقرار شد.");
             this.isConnecting = false;
             return this.connection;
         } catch (error) {

@@ -7,7 +7,7 @@ import ApiService from './ApiService'
 export type CreateBotRequest = {
     platform: number;
     name: string;
-    token: string;
+    token?: string;
     description?: string;
 };
 
@@ -37,6 +37,10 @@ export type ActiveBotListResponse ={
     createdAt: string;
 }
 
+export type ActivateBotResponse ={
+    isSuccess: boolean;
+    qrCodeBase64?: string | null;
+}
 // ==========================================
 // API Functions
 // ==========================================
@@ -72,8 +76,8 @@ export async function apiGetBots() {
     });
 }
 
-export async function apiActivateBot(id: string) {   
-    return ApiService.fetchDataWithAxios({
+export async function apiActivateBot(id: string): Promise<ActivateBotResponse> {   
+    return ApiService.fetchDataWithAxios<ActivateBotResponse>({
         url: `/api/v1/Bots/${id}/activate`,
         method: 'patch'
     });

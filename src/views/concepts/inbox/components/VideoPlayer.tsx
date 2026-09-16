@@ -16,8 +16,8 @@ export const VideoPlayer = ({ src, isOutgoing = false }: VideoPlayerProps) => {
     const [duration, setDuration] = useState(0);
     const [isMuted, setIsMuted] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isHoveringTrack, setIsHoveringTrack] = useState(false);
 
-    // قالب‌بندی زمان
     const formatTime = (time: number) => {
         if (isNaN(time) || !isFinite(time)) return "00:00";
         const m = Math.floor(time / 60).toString().padStart(2, '0');
@@ -26,7 +26,7 @@ export const VideoPlayer = ({ src, isOutgoing = false }: VideoPlayerProps) => {
     };
 
     const togglePlay = (e?: React.MouseEvent) => {
-        e?.stopPropagation(); // جلوگیری از باز شدن مودالِ احتمالی در پس‌زمینه
+        e?.stopPropagation();
         if (videoRef.current) {
             if (isPlaying) {
                 videoRef.current.pause();
@@ -58,7 +58,6 @@ export const VideoPlayer = ({ src, isOutgoing = false }: VideoPlayerProps) => {
         }
     };
 
-    // شنونده برای تغییر وضعیت تمام‌صفحه توسط دکمه ESC کیبورد
     useEffect(() => {
         const handleFullscreenChange = () => {
             setIsFullscreen(!!document.fullscreenElement);
@@ -80,7 +79,6 @@ export const VideoPlayer = ({ src, isOutgoing = false }: VideoPlayerProps) => {
 
     const handleLoadedMetadata = () => {
         if (videoRef.current) {
-            // رفع باگ Infinity در WebM
             if (videoRef.current.duration === Infinity) {
                 videoRef.current.currentTime = 1e101;
                 videoRef.current.ontimeupdate = () => {
@@ -103,40 +101,44 @@ export const VideoPlayer = ({ src, isOutgoing = false }: VideoPlayerProps) => {
         }
     };
 
-    const activeColor = isOutgoing ? '#4f46e5' : '#10b981';
+    const activeColor = isOutgoing ? '#818cf8' : '#34d399'; // رنگ‌های ملایم‌تر برای UI مدرن
 
     return (
         <div 
             ref={containerRef} 
-            className="relative group w-full rounded-2xl overflow-hidden bg-black shadow-sm flex items-center justify-center min-h-[150px] max-h-[300px]"
-            onClick={togglePlay} // کلیک روی کل ویدیو باعث پخش/توقف می‌شود
+            // حذف ارتفاع ثابت و استفاده از max-w برای جلوگیری از بزرگ شدن بیش از حد در دسکتاپ
+            className={`relative group w-full sm:max-w-sm md:max-w-md rounded-2xl overflow-hidden bg-black/95 shadow-lg flex items-center justify-center ${isFullscreen ? 'max-w-none' : ''}`}
+            onClick={togglePlay}
         >
             <video
                 ref={videoRef}
                 src={src}
-                className="w-full h-auto max-h-[300px] outline-none cursor-pointer"
+                // ارتفاع Auto باعث می‌شود ویدیو به نسبت ابعاد اصلی خودش نمایش داده شود
+                className="w-full h-auto max-h-[450px] object-contain outline-none cursor-pointer"
                 onTimeUpdate={handleTimeUpdate}
                 onLoadedMetadata={handleLoadedMetadata}
                 onEnded={() => setIsPlaying(false)}
                 playsInline
             />
 
-            {/* دکمه Play بزرگ وسط ویدیو (وقتی متوقف است نمایش داده می‌شود) */}
-            {!isPlaying && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity">
-                    <div className="w-14 h-14 flex items-center justify-center bg-white/20 backdrop-blur-md rounded-full text-white shadow-lg">
-                        <HiPlay className="text-3xl ml-1" />
-                    </div>
+            {/* دکمه Play شیشه‌ای و مدرن وسط ویدیو */}
+            <div className={`absolute inset-0 flex items-center justify-center transition-all duration-300 pointer-events-none ${isPlaying ? 'opacity-0 scale-110' : 'opacity-100 scale-100 bg-black/20'}`}>
+                <div className="w-16 h-16 flex items-center justify-center bg-white/20 backdrop-blur-xl rounded-full text-white shadow-[0_4px_30px_rgba(0,0,0,0.1)] border border-white/30 transform transition-transform group-hover:scale-105">
+                    <HiPlay className="text-3xl ml-1.5 drop-shadow-md" />
                 </div>
-            )}
+            </div>
 
-            {/* نوار کنترل پایین (Glassmorphism) - فقط با هاور نمایش داده می‌شود */}
+            {/* نوار کنترل شیشه‌ای پایین */}
             <div 
-                className={`absolute bottom-0 left-0 right-0 px-3 pb-3 pt-8 bg-gradient-to-t from-black/80 to-transparent transition-opacity duration-300 ${isPlaying ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'} flex flex-col gap-1`}
-                onClick={e => e.stopPropagation()} // جلوگیری از تداخل با کلیکِ پخش ویدیو
+                className={`absolute bottom-0 left-0 right-0 px-4 pb-4 pt-12 bg-gradient-to-t from-black/90 via-black/50 to-transparent transition-opacity duration-300 ${isPlaying ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'} flex flex-col gap-2`}
+                onClick={e => e.stopPropagation()}
             >
-                {/* نوار پیشرفت */}
-                <div className="w-full flex items-center h-4 cursor-pointer">
+                {/* نوار پیشرفت (هنگام هاور ضخیم‌تر می‌شود) */}
+                <div 
+                    className="w-full flex items-center cursor-pointer relative"
+                    onMouseEnter={() => setIsHoveringTrack(true)}
+                    onMouseLeave={() => setIsHoveringTrack(false)}
+                >
                     <input
                         type="range"
                         min="0"
@@ -144,32 +146,35 @@ export const VideoPlayer = ({ src, isOutgoing = false }: VideoPlayerProps) => {
                         step="0.1"
                         value={progress || 0}
                         onChange={handleSeek}
-                        className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-white/30 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md transition-all"
+                        className={`w-full appearance-none cursor-pointer bg-white/30 rounded-full transition-all duration-200 
+                        ${isHoveringTrack ? 'h-1.5' : 'h-1'} 
+                        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:transition-all
+                        ${isHoveringTrack ? '[&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5' : '[&::-webkit-slider-thumb]:w-0 [&::-webkit-slider-thumb]:h-0'}`}
                         style={{
-                            background: `linear-gradient(to right, ${activeColor} ${progress}%, rgba(255,255,255,0.3) ${progress}%)`
+                            background: `linear-gradient(to right, ${activeColor} ${progress}%, rgba(255,255,255,0.2) ${progress}%)`
                         }}
                         dir="ltr"
                     />
                 </div>
 
-                {/* دکمه‌ها و زمان */}
-                <div className="flex items-center justify-between text-white mt-1">
-                    <div className="flex items-center gap-3">
-                        <button onClick={togglePlay} className="hover:text-gray-300 transition-colors">
-                            {isPlaying ? <HiPause size={22} /> : <HiPlay size={22} />}
+                {/* دکمه‌های کنترل */}
+                <div className="flex items-center justify-between text-white/90">
+                    <div className="flex items-center gap-4">
+                        <button onClick={togglePlay} className="hover:text-white hover:scale-110 transition-all duration-200">
+                            {isPlaying ? <HiPause size={24} /> : <HiPlay size={24} />}
                         </button>
                         
-                        <button onClick={toggleMute} className="hover:text-gray-300 transition-colors">
-                            {isMuted ? <HiVolumeOff size={20} /> : <HiVolumeUp size={20} />}
+                        <button onClick={toggleMute} className="hover:text-white hover:scale-110 transition-all duration-200">
+                            {isMuted ? <HiVolumeOff size={22} /> : <HiVolumeUp size={22} />}
                         </button>
                         
-                        <span className="text-[11px] font-mono font-medium opacity-90 tracking-wide pt-0.5">
-                            {formatTime(currentTime)} / {formatTime(duration)}
+                        <span className="text-xs font-mono font-medium tracking-wider opacity-80 pt-0.5">
+                            {formatTime(currentTime)} <span className="opacity-50 px-1">/</span> {formatTime(duration)}
                         </span>
                     </div>
 
-                    <button onClick={toggleFullscreen} className="hover:text-gray-300 transition-colors">
-                        <HiArrowsExpand size={20} />
+                    <button onClick={toggleFullscreen} className="hover:text-white hover:scale-110 transition-all duration-200">
+                        <HiArrowsExpand size={22} />
                     </button>
                 </div>
             </div>

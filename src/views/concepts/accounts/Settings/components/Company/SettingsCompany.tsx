@@ -9,15 +9,16 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, Controller } from 'react-hook-form'
 import { z } from 'zod'
 import type { ZodType } from 'zod'
-import { useSessionUser } from '@/store/authStore'  
+import { useSessionUser } from '@/store/authStore'
 import { apiGetUserProfile } from '@/services/AuthService'
 import Switcher from '@/components/ui/Switcher'
-import { apiCreateCompany, apiUpdateCompany, apiGetCompany ,apiAssignCompanyToUser,apiDeactivateCompany,apiActivateCompany} from '@/services/CompanyService'
+import { apiCreateCompany, apiUpdateCompany, apiGetCompany, apiAssignCompanyToUser, apiDeactivateCompany, apiActivateCompany } from '@/services/CompanyService'
+import ApiTokenManager from './ApiTokenManager'
 import AdvancedCompanySettings from './AdvancedCompanySettings'
 import { CannedResponsesSettings } from './CannedResponsesSettings';
 type CompanySchema = {
     companyName: string
-    isActive: boolean 
+    isActive: boolean
 }
 
 const validationSchema: ZodType<CompanySchema> = z.object({
@@ -26,10 +27,11 @@ const validationSchema: ZodType<CompanySchema> = z.object({
 })
 
 const SettingsCompany = () => {
-    const { user, setUser } = useSessionUser() 
+    const { user, setUser } = useSessionUser()
     const [isLoadingData, setIsLoadingData] = useState(false)
     const [initialStatus, setInitialStatus] = useState<boolean>(true)
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false)
+    const [showApiTokenManager, setShowApiTokenManager] = useState(false)
     const [showCannedResponses, setShowCannedResponses] = useState(false);
     const {
         handleSubmit,
@@ -40,22 +42,22 @@ const SettingsCompany = () => {
     } = useForm<CompanySchema>({
         resolver: zodResolver(validationSchema),
         defaultValues: {
-            companyName: '', 
+            companyName: '',
             isActive: false
         }
     })
 
     const currentStatus = watch('isActive')
-    const hasActiveCompany = !!user?.companyId && 
-                             user.companyId !== "00000000-0000-0000-0000-000000000000" && 
-                             initialStatus === true;
-    const companyId = user?.companyId || user?.company?.id || '';                      
+    const hasActiveCompany = !!user?.companyId &&
+        user.companyId !== "00000000-0000-0000-0000-000000000000" &&
+        initialStatus === true;
+    const companyId = user?.companyId || user?.company?.id || '';
     useEffect(() => {
         const fetchCompanyData = async () => {
             if (user?.companyId) {
                 setIsLoadingData(true)
                 try {
-                    if(user.companyId=="00000000-0000-0000-0000-000000000000")return;
+                    if (user.companyId == "00000000-0000-0000-0000-000000000000") return;
                     const response = await apiGetCompany(user.companyId)
                     if (response) {
 
@@ -86,11 +88,11 @@ const SettingsCompany = () => {
 
     const onSubmit = async (values: CompanySchema) => {
         try {
-            await sleep(500) 
-            const hasCompany = !!user?.companyId && user?.companyId !="00000000-0000-0000-0000-000000000000"
+            await sleep(500)
+            const hasCompany = !!user?.companyId && user?.companyId != "00000000-0000-0000-0000-000000000000"
             if (hasCompany && user?.companyId) {
-                await apiUpdateCompany(user.companyId, { 
-                    id: user.companyId, 
+                await apiUpdateCompany(user.companyId, {
+                    id: user.companyId,
                     name: values.companyName,
                 });
                 if (values.isActive !== initialStatus) {
@@ -99,7 +101,6 @@ const SettingsCompany = () => {
                     } else {
                         await apiDeactivateCompany(user.companyId);
                     }
-                    // آپدیت کردن وضعیت اولیه بعد از موفقیت‌آمیز بودن تغییر
                     setInitialStatus(values.isActive);
                 }
             } else {
@@ -109,16 +110,15 @@ const SettingsCompany = () => {
                         userId: user.id,
                         companyId: companyId
                     });
-                    
+
                     setInitialStatus(values.isActive);
 
-                    // به‌روزرسانی اطلاعات کاربر...
                     const phone = user?.phoneNumber || user?.userName
                     if (phone) {
                         try {
                             const profileResp = await apiGetUserProfile(phone)
                             if (profileResp) {
-                                setUser(profileResp) 
+                                setUser(profileResp)
                             }
                         } catch (profileError) {
                             console.error(profileError)
@@ -148,12 +148,21 @@ const SettingsCompany = () => {
             </div>
         )
     }
+    
+   if (showApiTokenManager) {
+    return (
+        <div>
+            <ApiTokenManager onBack={() => setShowApiTokenManager(false)} />
+        </div>
+    )
+}
+
     if (showCannedResponses) {
         return (
             <div className="animate-in fade-in slide-in-from-left-4 duration-300">
-                <CannedResponsesSettings 
-                    companyId={companyId} 
-                    onBack={() => setShowCannedResponses(false)} 
+                <CannedResponsesSettings
+                    companyId={companyId}
+                    onBack={() => setShowCannedResponses(false)}
                 />
             </div>
         );
@@ -166,22 +175,22 @@ const SettingsCompany = () => {
                     <h4 className="mb-0">اطلاعات شرکت</h4>
                     <div className="">
                         {user?.companyId && (
-                        <div className="flex items-center gap-2 mr-4 border-r border-gray-200 pr-4">
-                            <span className={`font-semibold ${currentStatus ? 'text-green-600' : 'text-red-600'}`}>
-                                {currentStatus ? 'فعال' : 'غیرفعال'}
-                            </span>
-                            <Controller
-                                name="isActive"
-                                control={control}
-                                render={({ field }) => (
-                                    <Switcher 
-                                        checked={field.value}
-                                        onChange={(checked) => field.onChange(checked)}
-                                        disabled={isLoadingData}
-                                    />
-                                )}
-                            />
-                        </div>
+                            <div className="flex items-center gap-2 mr-4 border-r border-gray-200 pr-4">
+                                <span className={`font-semibold ${currentStatus ? 'text-green-600' : 'text-red-600'}`}>
+                                    {currentStatus ? 'فعال' : 'غیرفعال'}
+                                </span>
+                                <Controller
+                                    name="isActive"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Switcher
+                                            checked={field.value}
+                                            onChange={(checked) => field.onChange(checked)}
+                                            disabled={isLoadingData}
+                                        />
+                                    )}
+                                />
+                            </div>
                         )}
                     </div>
                     <Button
@@ -219,13 +228,29 @@ const SettingsCompany = () => {
                 <div className="mt-9 border-t border-gray-200 dark:border-gray-700 animate-[fadeIn_0.5s_ease-out]">
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 bg-gray-50 dark:bg-gray-800 rounded-xl">
                         <div className="mb-4 md:mb-0">
+                            <h5 className="mb-2">تنظیمات توسعه‌دهندگان</h5>
+                            <p className="text-gray-500 dark:text-gray-400">
+                                تولید و مدیریت کلید دسترسی (Token) برای اتصال سیستم به نرم‌افزارهای خارجی
+                            </p>
+                        </div>
+                        <Button
+                            variant="default"
+                            type="button"
+                            onClick={() => setShowApiTokenManager(true)}
+                        >
+                           مدیریت کلید API
+                        </Button>
+                    </div>
+
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                        <div className="mb-4 md:mb-0">
                             <h5 className="mb-2">تنظیمات پیشرفته گفتگو</h5>
                             <p className="text-gray-500 dark:text-gray-400">
                                 مدیریت پیام‌های خودکار، خداحافظی با مشتری و اتوماسیون‌های چت-بات.
                             </p>
                         </div>
-                        <Button 
-                            variant="default" 
+                        <Button
+                            variant="default"
                             type="button"
                             onClick={() => setShowAdvancedSettings(true)}
                         >
@@ -239,17 +264,17 @@ const SettingsCompany = () => {
                             <h5 className="mb-2">پاسخ‌های آماده</h5>
                             <p className="text-gray-500 dark:text-gray-400">مدیریت پیام‌های پرتکرار برای دسترسی سریع اپراتورها</p>
                         </div>
-                        <Button 
-                            variant="default" 
+                        <Button
+                            variant="default"
                             type="button"
                             onClick={() => setShowCannedResponses(true)}
-                            >
-                        مدیریت پاسخ‌ها
+                        >
+                            مدیریت پاسخ‌ها
                         </Button>
                     </div>
                 </div>
-                
-                
+
+
 
 
 

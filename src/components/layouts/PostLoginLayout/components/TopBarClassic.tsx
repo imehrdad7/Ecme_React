@@ -37,6 +37,8 @@ const TopBarClassic = ({ children }: CommonProps) => {
                                 <Search />
                                 {/* <LanguageSelector /> */}
                                 <Notification />
+                                <SidePanel />
+
                                 <UserProfileDropdown hoverable={false} />
                             </>
                         }
