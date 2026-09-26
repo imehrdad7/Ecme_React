@@ -49,6 +49,10 @@ export default function Footer({
         /^\/concepts\/inbox$/,
         /^\/chat$/,
         /^\/concepts\/bots\/bot-create$/,
+        /^\/concepts\/bots\/bot-list$/,
+        /^\/concepts\/auto-reply\/list$/,
+        /^\/concepts\/auto-reply\/create$/,
+        /^\/concepts\/CampaignList$/,
         /^\/concepts\/campaigns\/[a-zA-Z0-9-]+\/contacts\/?$/,
     ]
 

@@ -73,6 +73,7 @@ export type CampaignDto = {
     id: string;
     name: string;
     botName: string;
+    botPlatform: string;
     status: CampaignStatus;
     scheduledAt: string | null;
     startedAt: string | null;
