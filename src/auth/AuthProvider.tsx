@@ -126,25 +126,21 @@ const signIn = async (values: SignInCredential): AuthResult => {
             const resp = await apiSignUp(values); // یا هر تابع API که دارید
             
             if (resp) {
-                // 🌟 استفاده از 'as const' برای اینکه TS بفهمد این یک استرینگ معمولی نیست
                 return {
                     status: 'success' as const, 
                     message: 'ثبت‌نام با موفقیت انجام شد'
                 };
             }
             
-            // 🌟 جلوگیری از بازگشت undefined در صورتی که resp.data وجود نداشت
             return {
                 status: 'failed' as const,
                 message: 'خطایی در دریافت اطلاعات رخ داد'
             };
 
         } catch (error: any) {
-            // 🌟 ساختاردهی دقیق خروجی خطا برای جلب رضایت تایپ‌اسکریپت
             return {
                 status: 'failed' as const,
-                message: error?.response?.data?.message || 'خطا در ارتباط با سرور',
-                // اگر بک‌اند شما ارورهای فیلدها را برمی‌گرداند، آن را اینطور پاس بدهید:
+                message: error?.response?.data?.message || error?.response?.data?.Message || 'خطا در ارتباط با سرور',
                 errors: error?.response?.data?.errors as Record<string, string[]> | undefined
             };
         }

@@ -5,8 +5,8 @@ export type SignInCredential = {
 
 export type SignInResponse = {
     token: {
-        token:string
-        refreshToken:string
+        token: string
+        refreshToken: string
     };
     // user: {
     //     userId: string
@@ -46,19 +46,19 @@ export type AuthResult = Promise<{
 export type SignUpResult = {
     status: 'success' | 'failed'
     message: string
-    errors?: Record<string, string[]> 
+    errors?: Record<string, string[]>
 }
 
 export type Company = {
     id: string;
     name: string;
     isActive: boolean;
-    autoGoodbyeMessage?: string; 
+    autoGoodbyeMessage?: string;
 }
 
 
 export type User = {
-    id: string 
+    id: string
     avatarFileName?: string | null
     firstName?: string | null
     lastName?: string | null
@@ -71,6 +71,13 @@ export type User = {
     companyName?: string
     subscriptionEndDate?: string | null
     company?: Company;
+    telegramChatId?: string | null
+    baleChatId?: string | null
+    whatsAppChatId?: string | null
+    isTelegramConnected?: boolean
+    isBaleConnected?: boolean
+    isWhatsAppConnected?: boolean
+    isHandoffEnabled?: boolean
 }
 
 export type Token = {

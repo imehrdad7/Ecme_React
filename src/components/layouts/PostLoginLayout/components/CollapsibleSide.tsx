@@ -29,7 +29,7 @@ const CollapsibleSide = ({ children }: CommonProps) => {
                             <>
                                 {smaller.lg && <MobileNav />}
                                 {larger.lg && <SideNavToggle />}
-                                <Search />
+                                {/* <Search /> */}
                             </>
                         }
                         headerEnd={

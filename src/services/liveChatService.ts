@@ -6,6 +6,7 @@ export async function apiSearchConversations<T>(params: {
     companyId: string; 
     searchTerm?: string; 
     isActive?: boolean; 
+    mode?: number;
     pageNumber?: number; 
     pageSize?: number 
 }) {
@@ -187,7 +188,6 @@ export async function apiGetMessageContext(
     messageId: string, 
     contextSize: number = 20
 ) {
-    // دقت کنید که خروجی این متد در بک‌اند یک آرایه خالص (List<MessageDto>) است
     return ApiService.fetchDataWithAxios<Message[]>({
         url: `/api/v1/conversations/${conversationId}/messages/${messageId}/context`,
         method: 'get',
@@ -195,4 +195,13 @@ export async function apiGetMessageContext(
             contextSize
         }
     });
+}
+
+// بازگرداندن کنترل مکالمه به ربات (پایان توقف)
+export async function apiResumeBotControl<T>(data: { conversationId: string; companyId: string }) {
+    return ApiService.fetchDataWithAxios<T>({
+        url: `/api/v1/conversations/${data.conversationId}/resume-bot`,
+        method: 'patch',
+        data
+    })
 }

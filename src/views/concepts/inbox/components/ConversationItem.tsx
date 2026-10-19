@@ -112,7 +112,6 @@ export const ConversationItem = ({ chat, isSelected, currentUserId, onClick }: P
     const userName = chat.contactName || chat.contactPhoneNumber || 'کاربر ناشناس';
     const isGroup = chat.isPrivateChat === false;
     const groupName = chat.chatName || '';
-    
     const isAssignedToOther = !!chat.assigneeUserId && chat.assigneeUserId !== currentUserId;
     const isAssignedToMe = !!chat.assigneeUserId && chat.assigneeUserId === currentUserId;
     const hasUnread = (chat.unreadCount ?? 0) > 0;
@@ -123,19 +122,16 @@ export const ConversationItem = ({ chat, isSelected, currentUserId, onClick }: P
     return (
         <button
             onClick={onClick}
-            // استایل پایه: فاصله بیشتر، گوشه‌های گردتر، و حالت شیشه‌ای در لایت/دارک مود
             className={`relative w-full text-left rtl:text-right flex flex-col justify-between p-4 min-h-[115px] mb-2.5 rounded-[22px] transition-all duration-300 outline-none group overflow-hidden ${          
                 isSelected
                     ? `bg-gradient-to-br ${platformStyle.gradient} shadow-lg shadow-${platformStyle.colorClass}/20 scale-[1.02] z-10 border-transparent`
                     : 'bg-white dark:bg-[#1f2937]/60 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_-10px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 hover:shadow-md hover:-translate-y-0.5'
             }`}
         >
-            {/* 🌟 خلاقیت ۲: نوار رنگی هویت (Accent Bar) در حالت عادی */}
             {!isSelected && (
                 <div className={`absolute top-0 right-0 w-1.5 h-full ${platformStyle.colorClass} opacity-80 rounded-r-[22px]`}></div>
             )}
 
-            {/* 🌟 خلاقیت ۳: واترمارک بزرگ و محو لوگوی پلتفرم در بک‌گراند سمت چپ */}
             <div className={`absolute -bottom-4 -left-3 transform -rotate-12 transition-opacity duration-300 pointer-events-none ${
                 isSelected 
                 ? 'opacity-[0.15] text-white scale-125' 
@@ -161,7 +157,6 @@ export const ConversationItem = ({ chat, isSelected, currentUserId, onClick }: P
                         {isAssignedToMe && <HiOutlineLockClosed className={`text-[13px] ${isSelected ? 'text-white/80' : 'text-amber-500'}`} />}
                     </div>
                     
-                    {/* نام گروه (زیر نام اصلی با فونت ظریف‌تر) */}
                     {isGroup && groupName && (
                         <span className={`text-[11.5px] font-bold mt-0.5 truncate max-w-[150px] ${isSelected ? 'text-white/80' : platformStyle.textClass}`}>
                             {groupName}

@@ -35,6 +35,8 @@ const Inbox = () => {
         isLoadingChats,
         selectedPlatform,
         setSelectedPlatform,
+        chatFilterMode,
+        setChatFilterMode,
         isLoadingMore,
         hasMore,
         totalCount,
@@ -63,6 +65,8 @@ const Inbox = () => {
                     setSearchQuery={setSearchQuery}
                     selectedPlatform={selectedPlatform}
                     setSelectedPlatform={setSelectedPlatform}
+                    chatFilterMode={chatFilterMode}
+                    setChatFilterMode={setChatFilterMode}
                     isLoading={isLoadingChats}
                     isLoadingMore={isLoadingMore}
                     hasMore={hasMore}

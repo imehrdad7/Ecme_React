@@ -7,7 +7,7 @@ import type { User } from '@/@types/auth'
 
 type Session = {
     signedIn: boolean
-}   
+}
 
 type AuthState = {
     session: Session
@@ -17,7 +17,7 @@ type AuthState = {
 type AuthAction = {
     setSessionSignedIn: (payload: boolean) => void
     setUser: (payload: Partial<User>) => void
-    clearSession: () => void 
+    clearSession: () => void
 }
 
 const getPersistStorage = () => {
@@ -37,12 +37,28 @@ const initialState: AuthState = {
         signedIn: false,
     },
     user: {
+        // --- اطلاعات پایه ---
         id: '',
+        companyId: '',
         avatarFileName: '',
         userName: '',
+        firstName: '',
+        lastName: '',
         phoneNumber: '',
         email: '',
-        authority: [],
+        role: '',
+        authority: [], 
+
+        companyName: '',
+        subscriptionEndDate: '',
+
+        telegramChatId: '',
+        baleChatId: '',
+        whatsAppChatId: '',
+
+        isTelegramConnected: false,
+        isBaleConnected: false,
+        isWhatsAppConnected: false,
     },
 }
 
@@ -50,7 +66,7 @@ export const useSessionUser = create<AuthState & AuthAction>()(
     persist(
         (set) => ({
             ...initialState,
-            
+
             setSessionSignedIn: (payload) =>
                 set((state) => ({
                     session: {
@@ -58,11 +74,11 @@ export const useSessionUser = create<AuthState & AuthAction>()(
                         signedIn: payload,
                     },
                 })),
-                
+
             setUser: (payload) =>
                 set((state) => {
-                    const mappedAuthority = payload.role 
-                        ? [payload.role] 
+                    const mappedAuthority = payload.role
+                        ? [payload.role]
                         : payload.authority || state.user.authority;
 
                     return {
@@ -73,7 +89,7 @@ export const useSessionUser = create<AuthState & AuthAction>()(
                         },
                     };
                 }),
-                
+
             // متد جادویی و تمیز برای ریست کردن کامل وضعیت به حالت اولیه
             clearSession: () => set(() => ({ ...initialState })),
         }),

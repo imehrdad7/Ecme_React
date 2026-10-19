@@ -69,7 +69,6 @@ export async function apiGetBot(id: string) {
 }
 
 export async function apiGetBots() {   
-    // این متد برای گرفتن لیست تمام ربات‌ها در صفحه bot-list کاربرد دارد
     return ApiService.fetchDataWithAxios<BotResponse[]>({
         url: `/api/v1/Bots`,
         method: 'get'

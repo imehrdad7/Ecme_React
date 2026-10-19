@@ -53,6 +53,7 @@ export default function Footer({
         /^\/concepts\/auto-reply\/list$/,
         /^\/concepts\/auto-reply\/create$/,
         /^\/concepts\/CampaignList$/,
+        /^\/concepts\/hand-off\/HandoffSettingsForm$/,
         /^\/concepts\/campaigns\/[a-zA-Z0-9-]+\/contacts\/?$/,
     ]
 

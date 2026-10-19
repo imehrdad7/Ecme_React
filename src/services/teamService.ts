@@ -20,9 +20,9 @@ export async function apiInviteOperator<T>(data: InviteOperatorPayload) {
 export type TeamMember = {
     id: string;
     phoneNumber: string;
-    role: string; 
+    role: string;
     isActive: boolean;
-    firstName: string;  
+    firstName: string;
     lastName: string;
     email: string;
 };
@@ -50,12 +50,12 @@ export async function apiEditOperator<T>(data: EditOperatorPayload) {
     return ApiService.fetchDataWithAxios<T>({
         url: `/api/v1/Users/UpdateUsersCompany/${data.userId}`,
         method: 'put',
-        data: { 
-            userId: data.userId, 
-            firstName: data.firstName, 
-            lastName: data.lastName, 
-            email: data.email, 
-            isActive: data.isActive 
+        data: {
+            userId: data.userId,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            isActive: data.isActive
         }
     });
 }
@@ -65,4 +65,23 @@ export async function apiDeleteOperator<T>(userId: string) {
         url: `/api/v1/Users/${userId}/remove-company`,
         method: 'delete'
     });
-} 
+}
+
+
+export type ResetOperatorPasswordPayload = {
+    userId: string;
+    companyId: string;
+    newPassword: string;
+};
+
+export async function apiResetOperatorPassword<T>(data: ResetOperatorPasswordPayload) {
+    return ApiService.fetchDataWithAxios<T>({
+        url: `/api/v1/Users/${data.userId}/admin-reset-password`,
+        method: 'patch',
+        data: {
+            userId: data.userId,
+            companyId: data.companyId,
+            newPassword: data.newPassword
+        }
+    });
+}

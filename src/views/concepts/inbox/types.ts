@@ -6,6 +6,7 @@ export type Conversation = {
     contactPhoneNumber: string;
     status: number; // مثلا 1: Open, 2: Closed
     statusName: string;
+    mode?: number;
     assigneeUserId?: string;
     createdAt: string;
     platform?: string; // یا channel

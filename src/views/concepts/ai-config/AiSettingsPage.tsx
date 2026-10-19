@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { useForm, Controller, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { 
-    HiArrowRight, 
-    HiOutlineSave, 
-    HiSparkles, 
+import {
+    HiArrowRight,
+    HiOutlineSave,
+    HiSparkles,
     HiX,
     HiOutlinePlus,
     HiOutlineVariable
@@ -94,8 +94,8 @@ const TagInput = ({ value = [], onChange, placeholder, disabled }: { value: stri
                     placeholder={placeholder}
                     className="w-full h-11 pl-4 pr-11 bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-gray-900 outline-none text-gray-700 dark:text-gray-200 transition-all text-sm disabled:opacity-50"
                 />
-                <button 
-                    type="button" 
+                <button
+                    type="button"
                     onClick={handleAdd}
                     disabled={disabled || !inputValue.trim()}
                     className="absolute right-2 w-7 h-7 flex items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 hover:bg-indigo-200 disabled:opacity-50 disabled:hover:bg-indigo-100 transition-colors"
@@ -103,7 +103,7 @@ const TagInput = ({ value = [], onChange, placeholder, disabled }: { value: stri
                     <HiOutlinePlus />
                 </button>
             </div>
-            
+
             {value.length > 0 && (
                 <div className="flex flex-col gap-1.5 mt-1">
                     {value.map((tag, index) => (
@@ -113,8 +113,8 @@ const TagInput = ({ value = [], onChange, placeholder, disabled }: { value: stri
                                 <span className="leading-relaxed">{tag}</span>
                             </div>
                             {!disabled && (
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     onClick={() => removeTag(index)}
                                     className="text-gray-300 hover:text-red-500 transition-colors p-1 rounded-md opacity-0 group-hover:opacity-100 shrink-0 mt-0.5"
                                 >
@@ -168,7 +168,7 @@ const AiSettingsPage = () => {
     useEffect(() => {
         if (config) {
             const safeConfig = config as any;
-            
+
             // تبدیل JSON متغیرها از بک‌اند به آرایه برای فرم
             let parsedVariables: { key: string; value: string }[] = [];
             if (safeConfig.promptVariablesJson) {
@@ -203,7 +203,7 @@ const AiSettingsPage = () => {
             values.promptVariables.forEach(v => {
                 if (v.key && v.value) {
                     // حذف براکت‌های احتمالی اگر کاربر اشتباها وارد کرده باشد
-                    const cleanKey = v.key.replace(/[{}]/g, '').trim(); 
+                    const cleanKey = v.key.replace(/[{}]/g, '').trim();
                     variablesObj[cleanKey] = v.value.trim();
                 }
             });
@@ -222,7 +222,7 @@ const AiSettingsPage = () => {
             };
 
             await saveConfig(payload);
-            
+
             toast.push(
                 <Notification title="تنظیمات ذخیره شد" type="success" duration={4000}>
                     رفتار و مدل هوش مصنوعی با موفقیت بروزرسانی گردید.
@@ -237,13 +237,72 @@ const AiSettingsPage = () => {
         }
     }
 
+    const AI_MODELS_LIST = [
+        {
+            group: "OpenAI (GPT & o-series)",
+            options: [
+                { value: 10, label: "GPT-4o (پرچمدار قدرتمند)" },
+                { value: 11, label: "GPT-4o Mini (سریع و اقتصادی)" },
+                { value: 12, label: "o1-mini (استدلالی ارزان)" },
+                { value: 13, label: "o1-preview (استدلال عمیق)" },
+                { value: 14, label: "o3-mini (نسل جدید استدلال)" },
+            ]
+        },
+        {
+            group: "Google (Gemini)",
+            options: [
+                { value: 20, label: "Gemini 1.5 Pro (پیشرفته)" },
+                { value: 21, label: "Gemini 1.5 Flash (اقتصادی)" },
+                { value: 22, label: "Gemini 2.0 Flash (نسل جدید)" },
+                { value: 23, label: "Gemini 1.5 Flash-8B (فوق اقتصادی)" },
+                { value: 24, label: "Gemini 2.0 Flash Thinking (استدلالی)" },
+            ]
+        },
+        {
+            group: "Anthropic (Claude)",
+            options: [
+                { value: 30, label: "Claude 3.5 Sonnet (طبیعی و محاوره‌ای)" },
+                { value: 31, label: "Claude 3.5 Haiku (سریع)" },
+                { value: 32, label: "Claude 3.7 Sonnet (هیبریدی قدرتمند)" },
+            ]
+        },
+        {
+            group: "DeepSeek",
+            options: [
+                { value: 40, label: "DeepSeek V3 (متن‌باز و اقتصادی)" },
+                { value: 41, label: "DeepSeek R1 (استدلالی پرچمدار)" },
+                { value: 42, label: "DeepSeek R1 Distill Qwen 32B (فارسی عالی)" },
+                { value: 43, label: "DeepSeek R1 Distill Llama 70B" },
+            ]
+        },
+        {
+            group: "Alibaba (Qwen) - زبان فارسی",
+            options: [
+                { value: 70, label: "Qwen Plus (بسیار روان در فارسی)" },
+                { value: 71, label: "Qwen Max (پرچمدار علی‌بابا)" },
+            ]
+        },
+        {
+            group: "سایر مدل‌های برتر (Cohere, Meta, xAI, Mistral)",
+            options: [
+                { value: 50, label: "Command R (ویژه جستجو و پایگاه دانش)" },
+                { value: 51, label: "Command R+ (پایگاه دانش پیشرفته)" },
+                { value: 60, label: "Llama 3.3 70B (متا - متن‌باز)" },
+                { value: 80, label: "Mistral Nemo (اروپایی اقتصادی)" },
+                { value: 81, label: "Mistral Large (اروپایی پرچمدار)" },
+                { value: 90, label: "Grok 2 (xAI)" },
+                { value: 91, label: "Grok 3 (xAI - پرچمدار)" },
+            ]
+        }
+    ];
+
     return (
         <div className="flex flex-col gap-6 relative pb-12 w-full max-w-5xl mx-auto">
-            
-            <div className="sticky top-[55px] md:top-[70px] z-30 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md shadow-sm border border-gray-100 dark:border-gray-700 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all mt-2">                
+
+            <div className="sticky top-[55px] md:top-[70px] z-30 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md shadow-sm border border-gray-100 dark:border-gray-700 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all mt-2">
                 <div className="flex items-center gap-4">
-                    <Button 
-                        shape="circle" variant="plain" 
+                    <Button
+                        shape="circle" variant="plain"
                         className="text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
                         icon={<HiArrowRight className="text-xl" />} onClick={() => navigate(-1)}
                     />
@@ -263,7 +322,7 @@ const AiSettingsPage = () => {
             </div>
 
             <Form id="ai-config-form" onSubmit={configForm.handleSubmit(handleSaveConfig)} className="flex flex-col gap-6">
-                
+
                 {/* کارت اول: پیکربندی پایه */}
                 <Card className="w-full bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 shadow-sm rounded-3xl p-6 md:p-8">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 dark:border-gray-700 pb-5 mb-6">
@@ -296,17 +355,29 @@ const AiSettingsPage = () => {
                     <div className={`grid grid-cols-1 md:grid-cols-2 gap-8 transition-all duration-300 ${!isAiActive ? 'opacity-40 pointer-events-none' : ''}`}>
                         <FormItem label="مدل زبانی (LLM)" invalid={Boolean(configForm.formState.errors.selectedModel)} errorMessage={configForm.formState.errors.selectedModel?.message}>
                             <Controller
-                                name="selectedModel" control={configForm.control}
+                                name="selectedModel"
+                                control={configForm.control}
                                 render={({ field }) => (
-                                    <select 
+                                    <select
                                         disabled={!isAiActive}
-                                        className="w-full h-11 px-4 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-gray-700 dark:text-gray-200 transition-all cursor-pointer"
-                                        value={field.value} onChange={(e) => field.onChange(Number(e.target.value))}
+                                        className="w-full h-11 px-4 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-gray-700 dark:text-gray-200 transition-all cursor-pointer disabled:opacity-50"
+                                        value={field.value}
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
                                     >
-                                        <option value={0}>GPT-4o</option>
-                                        <option value={1}>GPT-4o Mini</option>
-                                        <option value={2}>DeepSeek Chat</option>
-                                        <option value={3}>Claude 3.5 Sonnet</option>
+                                        <option value={0} disabled>-- یک مدل هوش مصنوعی انتخاب کنید --</option>
+                                        {AI_MODELS_LIST.map((group, index) => (
+                                            <optgroup key={index} label={group.group} className="font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800">
+                                                {group.options.map((option) => (
+                                                    <option
+                                                        key={option.value}
+                                                        value={option.value}
+                                                        className="font-normal text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900"
+                                                    >
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </optgroup>
+                                        ))}
                                     </select>
                                 )}
                             />
@@ -317,7 +388,7 @@ const AiSettingsPage = () => {
                                 name="temperature" control={configForm.control}
                                 render={({ field }) => (
                                     <div className="pt-2">
-                                        <input 
+                                        <input
                                             type="range" min="0" max="1" step="0.1" disabled={!isAiActive}
                                             className="w-full accent-indigo-600 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
                                             value={field.value} onChange={(e) => field.onChange(Number(e.target.value))}
@@ -335,7 +406,7 @@ const AiSettingsPage = () => {
 
                 {/* کارت دوم: پرامپت بیلدر */}
                 <Card className={`w-full bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 shadow-sm rounded-3xl p-6 md:p-8 transition-all duration-300 ${!isAiActive ? 'opacity-40 pointer-events-none' : ''}`}>
-                    
+
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 dark:border-gray-700 pb-5 mb-8">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
@@ -351,17 +422,17 @@ const AiSettingsPage = () => {
                     <div className="flex flex-col gap-10">
                         <div>
                             <h5 className="text-base font-bold text-blue-600 dark:text-blue-400">۱. نقش و هویت ربات</h5>
-                            <FormItem 
-                                invalid={Boolean(configForm.formState.errors.promptRole)} 
-                                errorMessage={configForm.formState.errors.promptRole?.message} 
+                            <FormItem
+                                invalid={Boolean(configForm.formState.errors.promptRole)}
+                                errorMessage={configForm.formState.errors.promptRole?.message}
                                 className="mb-0"
                             >
                                 <Controller
                                     name="promptRole" control={configForm.control}
                                     render={({ field }) => (
-                                        <TagInput 
-                                            disabled={!isAiActive} value={field.value} onChange={field.onChange} 
-                                            placeholder="مثال: تو یک دستیار فروش خبره هستی..." 
+                                        <TagInput
+                                            disabled={!isAiActive} value={field.value} onChange={field.onChange}
+                                            placeholder="مثال: تو یک دستیار فروش خبره هستی..."
                                         />
                                     )}
                                 />
@@ -376,9 +447,9 @@ const AiSettingsPage = () => {
                                 <Controller
                                     name="promptTone" control={configForm.control}
                                     render={({ field }) => (
-                                        <TagInput 
-                                            disabled={!isAiActive} value={field.value} onChange={field.onChange} 
-                                            placeholder="مثال: پاسخ‌ها باید دوستانه و کوتاه باشند..." 
+                                        <TagInput
+                                            disabled={!isAiActive} value={field.value} onChange={field.onChange}
+                                            placeholder="مثال: پاسخ‌ها باید دوستانه و کوتاه باشند..."
                                         />
                                     )}
                                 />
@@ -393,9 +464,9 @@ const AiSettingsPage = () => {
                                 <Controller
                                     name="promptRules" control={configForm.control}
                                     render={({ field }) => (
-                                        <TagInput 
-                                            disabled={!isAiActive} value={field.value} onChange={field.onChange} 
-                                            placeholder="مثال: اگر قیمت را نمیدانستی کاربر را به سایت ارجاع بده..." 
+                                        <TagInput
+                                            disabled={!isAiActive} value={field.value} onChange={field.onChange}
+                                            placeholder="مثال: اگر قیمت را نمیدانستی کاربر را به سایت ارجاع بده..."
                                         />
                                     )}
                                 />
@@ -407,15 +478,15 @@ const AiSettingsPage = () => {
                         <div>
                             <h5 className="text-base font-bold text-amber-600 dark:text-amber-400">۴. پیام جایگزین (Fallback Message)</h5>
                             <p className="text-xs text-gray-500 mt-1 mb-3">وقتی ربات متوجه منظور کاربر نشود یا جوابی نداشته باشد، این پیام را می‌فرستد.</p>
-                            <FormItem 
-                                invalid={Boolean(configForm.formState.errors.fallbackMessage)} 
-                                errorMessage={configForm.formState.errors.fallbackMessage?.message} 
+                            <FormItem
+                                invalid={Boolean(configForm.formState.errors.fallbackMessage)}
+                                errorMessage={configForm.formState.errors.fallbackMessage?.message}
                                 className="mb-0"
                             >
                                 <Controller
                                     name="fallbackMessage" control={configForm.control}
                                     render={({ field }) => (
-                                        <textarea 
+                                        <textarea
                                             {...field}
                                             disabled={!isAiActive}
                                             rows={2}
@@ -442,12 +513,12 @@ const AiSettingsPage = () => {
                                 <p className="text-xs text-gray-500 mt-1">با تعریف متغیرها، می‌توانید در بخش قوانین از <span className="dir-ltr inline-block bg-gray-100 dark:bg-gray-700 px-1 rounded">{"{{نام_متغیر}}"}</span> استفاده کنید.</p>
                             </div>
                         </div>
-                        <Button 
-                            type="button" 
-                            size="sm" 
-                            variant="dashed" 
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant="dashed"
                             disabled={!isAiActive}
-                            icon={<HiOutlinePlus />} 
+                            icon={<HiOutlinePlus />}
                             onClick={() => appendVariable({ key: '', value: '' })}
                         >
                             افزودن متغیر جدید
@@ -462,7 +533,7 @@ const AiSettingsPage = () => {
                         ) : (
                             variableFields.map((field, index) => (
                                 <div key={field.id} className="flex flex-col md:flex-row items-start md:items-center gap-3 group relative bg-gray-50/50 dark:bg-gray-900/20 p-3 rounded-xl border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-colors">
-                                    
+
                                     {/* Key Input (نام متغیر) */}
                                     <div className="w-full md:w-1/3">
                                         <Controller
@@ -479,7 +550,6 @@ const AiSettingsPage = () => {
                                                         placeholder="VarName"
                                                         className="flex-1 w-full bg-transparent border-none outline-none text-indigo-600 dark:text-indigo-400 font-semibold text-base text-center px-2 placeholder:text-gray-300 dark:placeholder:text-gray-600 placeholder:font-normal"
                                                         onChange={(e) => {
-                                                            // حذف خودکار اسپیس و آکولادهای اضافه در زمان تایپ
                                                             const cleanValue = e.target.value.replace(/[{ }\-!@#$%^&*()+=\[\]\\|;:'",.<>/?]/g, '');
                                                             inputField.onChange(cleanValue);
                                                         }}
@@ -491,7 +561,7 @@ const AiSettingsPage = () => {
                                             )}
                                         />
                                     </div>
-                                    
+
                                     {/* علامت مساوی نمایشی */}
                                     <div className="hidden md:flex items-center justify-center text-gray-400">
                                         =
@@ -511,7 +581,7 @@ const AiSettingsPage = () => {
                                                 />
                                             )}
                                         />
-                                        
+
                                         {/* دکمه حذف */}
                                         <button
                                             type="button"

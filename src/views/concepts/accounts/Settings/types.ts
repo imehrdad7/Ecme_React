@@ -7,6 +7,7 @@ export type View =
     | 'companySetting'
     | 'TeamManagement'
     | 'SettingSubscription'
+    | 'ApiTokenManager'
 
 
 export type CreditCard = {

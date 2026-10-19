@@ -8,6 +8,7 @@ import navigationConfig from '@/configs/navigation.config'
 import { useThemeStore } from '@/store/themeStore'
 import { useRouteKeyStore } from '@/store/routeKeyStore'
 import { useSessionUser } from '@/store/authStore'
+import Logo from '@/components/template/Logo' // 👈 ۱. ایمپورت کامپوننت لوگو
 
 const VerticalMenuContent = lazy(
     () => import('@/components/template/VerticalMenuContent'),
@@ -37,8 +38,10 @@ const MobileNav = () => {
         (state) => state.layout.sideNavCollapse,
     )
     const currentRouteKey = useRouteKeyStore((state) => state.currentRouteKey)
-
     const userAuthority = useSessionUser((state) => state.user.authority)
+    
+    // 👈 ۲. دریافت تم فعلی (دارک/لایت) برای نمایش لوگوی مناسب
+    const mode = useThemeStore((state) => state.mode) 
 
     return (
         <>
@@ -46,7 +49,8 @@ const MobileNav = () => {
                 <MobileNavToggle toggled={isOpen} />
             </div>
             <Drawer
-                title="ناوبری"
+                // 👈 ۳. جایگزینی عنوان ساده با لوگوی اپلیکیشن
+                title={<Logo mode={mode} />} 
                 isOpen={isOpen}
                 bodyClass={classNames('p-0')}
                 width={330}
@@ -57,7 +61,7 @@ const MobileNav = () => {
                 <Suspense fallback={<></>}>
                     {isOpen && (
                         <VerticalMenuContent
-                            collapsed={sideNavCollapse}
+                            collapsed={false}
                             navigationTree={navigationConfig}
                             routeKey={currentRouteKey}
                             userAuthority={userAuthority as string[]}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HiOutlineUserAdd, HiOutlineTrash, HiOutlinePencil, HiOutlineShieldCheck } from 'react-icons/hi';
+import { HiOutlineUserAdd, HiOutlineTrash, HiOutlinePencil, HiOutlineShieldCheck, HiOutlineKey } from 'react-icons/hi';
 import Avatar from '@/components/ui/Avatar';
 import Button from '@/components/ui/Button';
 import Tag from '@/components/ui/Tag';
@@ -8,11 +8,10 @@ import { useSessionUser } from '@/store/authStore'
 import { apiGetTeamMembers } from '@/services/teamService';
 import { EditOperatorModal } from './EditOperatorModal';
 import { DeleteOperatorModal } from './DeleteOperatorModal';
+import { ResetOperatorPasswordModal } from './ResetOperatorPasswordModal';
 import toast from '@/components/ui/toast'
 import Notification from '@/components/ui/Notification'
 
-
-// تایپ فرضی برای اعضای تیم
 type TeamMember = {
     id: string;
     phoneNumber: string;
@@ -27,12 +26,14 @@ const TeamManagement = () => {
     const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
-    const { user, setUser } = useSessionUser() 
+    const { user } = useSessionUser();
     const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
     const [deletingMember, setDeletingMember] = useState<TeamMember | null>(null);
+    
+    const [resettingPasswordMember, setResettingPasswordMember] = useState<TeamMember | null>(null);
+
     const fetchTeamMembers = async () => {
         if (!user?.companyId) return;
-        
         setIsLoading(true);
         try {
             const response = await apiGetTeamMembers<any>(user?.companyId);
@@ -45,7 +46,6 @@ const TeamManagement = () => {
         }
     };
 
-    // دریافت دیتا در زمان لود شدن کامپوننت
     useEffect(() => {
         fetchTeamMembers();
     }, []);
@@ -62,8 +62,6 @@ const TeamManagement = () => {
 
     return (
         <div className="p-6 max-w-5xl mx-auto animate-[fadeIn_0.3s_ease-out]">
-            
-            {/* هدر صفحه */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">مدیریت تیم و اپراتورها</h2>
@@ -78,7 +76,6 @@ const TeamManagement = () => {
                 </Button>
             </div>
 
-            {/* جدول لیست اعضا */}
             <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full text-right">
@@ -94,23 +91,19 @@ const TeamManagement = () => {
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                             {teamMembers.map((member) => (
                                 <tr key={member.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors">
-                                    
-                                    {/* اطلاعات پایه کاربر */}
                                     <td className="py-4 px-6">
                                         <div className="flex items-center gap-3">
                                             <Avatar size={40} shape="circle" className="bg-indigo-50 text-indigo-600 font-bold">
-                                                {member.firstName.charAt(0)}
+                                                {member.firstName?.charAt(0) || 'ک'}
                                             </Avatar>
-                                            <span className="font-semibold text-gray-800 dark:text-gray-200">{member.firstName + " " +member.lastName}</span>
+                                            <span className="font-semibold text-gray-800 dark:text-gray-200">
+                                                {member.firstName} {member.lastName}
+                                            </span>
                                         </div>
                                     </td>
-
-                                    {/* شماره تماس */}
                                     <td className="py-4 px-6 text-gray-600 dark:text-gray-400 font-mono text-sm" dir="ltr">
                                         {member.phoneNumber}
                                     </td>
-
-                                    {/* نقش کاربری */}
                                     <td className="py-4 px-6">
                                         <div className="flex items-center gap-1.5">
                                             {member.role === 'User' ? (
@@ -124,8 +117,6 @@ const TeamManagement = () => {
                                             )}
                                         </div>
                                     </td>
-
-                                    {/* وضعیت */}
                                     <td className="py-4 px-6">
                                         {member.isActive ? (
                                             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
@@ -137,25 +128,33 @@ const TeamManagement = () => {
                                             </span>
                                         )}
                                     </td>
-
-                                    {/* دکمه‌های عملیات */}
                                     <td className="py-4 px-6 text-left">
                                         <div className="flex items-center justify-end gap-2">
-                                            {/* دکمه ویرایش */}
                                             {member.role !== 'Admin' && member.role !== 'SuperAdmin' && (
-                                                <Button 
-                                                    size="sm" shape="circle" variant="plain" 
-                                                    onClick={() => setEditingMember(member)}
-                                                    icon={<HiOutlinePencil className="text-gray-500 hover:text-indigo-600 text-lg" />} 
-                                                />
+                                                <>
+                                                    {/* 👇 دکمه جدید برای تغییر رمز عبور */}
+                                                    <Button 
+                                                        title="تغییر رمز عبور"
+                                                        size="sm" shape="circle" variant="plain" 
+                                                        onClick={() => setResettingPasswordMember(member)}
+                                                        icon={<HiOutlineKey className="text-gray-500 hover:text-amber-500 text-lg" />} 
+                                                    />
+                                                    
+                                                    <Button 
+                                                        title="ویرایش"
+                                                        size="sm" shape="circle" variant="plain" 
+                                                        onClick={() => setEditingMember(member)}
+                                                        icon={<HiOutlinePencil className="text-gray-500 hover:text-indigo-600 text-lg" />} 
+                                                    />
+                                                    
+                                                    <Button 
+                                                        title="حذف دسترسی"
+                                                        size="sm" shape="circle" variant="plain" 
+                                                        onClick={() => setDeletingMember(member)}
+                                                        icon={<HiOutlineTrash className="text-gray-500 hover:text-red-500 text-lg" />} 
+                                                    />
+                                                </>
                                             )}          
-                                            {member.role !== 'Admin' && member.role !== 'SuperAdmin' && (
-                                                <Button 
-                                                    size="sm" shape="circle" variant="plain" 
-                                                    onClick={() => setDeletingMember(member)}
-                                                    icon={<HiOutlineTrash className="text-gray-500 hover:text-red-500 text-lg" />} 
-                                                />
-                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -165,11 +164,13 @@ const TeamManagement = () => {
                 </div>
             </div>
 
+            {/* مودال‌ها */}
             <InviteOperatorModal 
                 isOpen={showAddModal} 
                 onClose={() => setShowAddModal(false)} 
                 onSuccess={() => handleActionSuccess('همکار جدید با موفقیت به تیم اضافه شد.')}
             />
+            
             <EditOperatorModal 
                 isOpen={!!editingMember} 
                 onClose={() => setEditingMember(null)} 
@@ -182,6 +183,13 @@ const TeamManagement = () => {
                 onClose={() => setDeletingMember(null)} 
                 onSuccess={() => handleActionSuccess('دسترسی همکار با موفقیت لغو شد.')}
                 member={deletingMember}
+            />
+
+            <ResetOperatorPasswordModal 
+                isOpen={!!resettingPasswordMember} 
+                onClose={() => setResettingPasswordMember(null)} 
+                onSuccess={() => handleActionSuccess('رمز عبور همکار با موفقیت تغییر کرد.')}
+                member={resettingPasswordMember}
             />
         </div>
     );

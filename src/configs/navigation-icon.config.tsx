@@ -1,4 +1,4 @@
-import { TbMessageBolt } from 'react-icons/tb'
+import { TbMessageBolt, TbUser, TbRefresh, TbRobot } from 'react-icons/tb'
 import {
     HiOutlineChip,           // بات‌ها
     HiOutlineInboxIn,        // صندوق ورودی
@@ -10,8 +10,11 @@ import {
     HiOutlineDatabase,       // پایگاه دانش
     HiOutlineBadgeCheck,     // پلن‌ها (نشان تایید و پکیج)
     HiOutlineShoppingCart,   // خرید پلن
-    HiOutlineReceiptTax      // تاریخچه خرید (فاکتور)
+    HiOutlineReceiptTax,      // تاریخچه خرید (فاکتور)
+    HiOutlineSwitchHorizontal
 } from 'react-icons/hi'
+
+import { FaUserNinja } from 'react-icons/fa';
 
 import {
     PiPuzzlePieceDuotone,
@@ -103,6 +106,7 @@ import {
     PiCodeDuotone,
     PiRobot
 } from 'react-icons/pi'
+
 
 export type NavigationIcons = Record<string, JSX.Element>
 
@@ -203,7 +207,7 @@ const navigationIcon: NavigationIcons = {
     sharedComponentDoc: <PiShareNetworkDuotone />,
     utilsDoc: <PiToolboxDuotone />,
     changeLog: <PiCodeDuotone />,
-    Robot:<PiRobot/>,
+    Robot: <PiRobot />,
     bot: <HiOutlineChip />,
     autoReply: <TbMessageBolt />,
     inbox: <HiOutlineInboxIn />,
@@ -215,7 +219,16 @@ const navigationIcon: NavigationIcons = {
     knowledge: <HiOutlineDatabase />,
     plans: <HiOutlineBadgeCheck />,
     pricing: <HiOutlineShoppingCart />,
-    invoice: <HiOutlineReceiptTax />
+    invoice: <HiOutlineReceiptTax />,
+   FaUserNinjaOutline: (
+        <FaUserNinja 
+            style={{ 
+                fill: 'transparent', 
+                stroke: 'currentColor', 
+                strokeWidth: '35px'
+            }} 
+        />
+    )
 }
 
 export default navigationIcon

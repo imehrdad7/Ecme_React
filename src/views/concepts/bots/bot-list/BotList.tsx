@@ -159,7 +159,7 @@ const BotList = () => {
 
             closeDeleteDialog()
         } catch (error: any) {
-            debugger
+            
             console.error('Delete error:', error)
             toast.push(
                 <Notification title="خطا در حذف" type="danger" duration={5000}>

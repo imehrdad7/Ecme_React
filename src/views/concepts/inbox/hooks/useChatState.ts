@@ -76,6 +76,7 @@ export const useChatState = () => {
 
     // === استیت‌های فیلتر و صفحه‌بندی ===
     const [selectedPlatform, setSelectedPlatform] = useState<string>('all');
+    const [chatFilterMode, setChatFilterMode] = useState<'all' | 'waiting'>('all');
     const [page, setPage] = useState<number>(1);
     const [hasMore, setHasMore] = useState<boolean>(true);
 
@@ -384,21 +385,33 @@ export const useChatState = () => {
                 const updatedChats = [...currentChats];
                 const chatToUpdate = { ...updatedChats[chatIndex] };
 
-                // اعمال تغییرات دریافتی از SignalR روی استیت
                 if (action === "Assigned") {
                     chatToUpdate.assigneeUserId = assigneeUserId;
+                    if (chatToUpdate.mode === 1) {
+                        chatToUpdate.mode = 1;
+                    } else {
+                        chatToUpdate.mode = 3;
+                    }
                 }
-                else if (action === "Unassigned") {
+                else if (action === "TakeControl") {
+                    chatToUpdate.mode = 3; // در دست انسان (HumanControlled)
+                }
+                else if (action === "Unassigned" || action === "ResumeBot") {
                     chatToUpdate.assigneeUserId = undefined;
-                    chatToUpdate.status = 1;
+                    chatToUpdate.status = 1; // Open
+                    chatToUpdate.mode = 2;   // بازگشت به ربات (BotControlled)
+                }
+                else if (action === "HandoffRequested") {
+                    chatToUpdate.mode = 1;   // توقف ربات و نیاز به اقدام فوری
                 }
                 else if (action === "Closed") {
                     chatToUpdate.assigneeUserId = undefined;
-                    chatToUpdate.status = 0;
+                    chatToUpdate.status = 2; // Closed مطابق ConversationStatus دامین
                 }
                 else if (action === "Reopened") {
                     chatToUpdate.assigneeUserId = undefined;
-                    chatToUpdate.status = 1;
+                    chatToUpdate.status = 1; // Open
+                    chatToUpdate.mode = 2;   // BotControlled
                 }
 
                 updatedChats[chatIndex] = chatToUpdate;
@@ -410,6 +423,11 @@ export const useChatState = () => {
             fetchCannedResponses();
         }
     });
+    useEffect(() => {
+        if (chatFilterMode === 'waiting' && conversations.length > 0 && !conversations.some(c => c.mode === 1)) {
+            setChatFilterMode('all');
+        }
+    }, [conversations, chatFilterMode]);
 
     // ==========================================
 
@@ -443,6 +461,9 @@ export const useChatState = () => {
                     payload.platform = selectedPlatform;
                 }
 
+                if (chatFilterMode === 'waiting') {
+                    payload.mode = 1;
+                }
                 const response = await apiSearchConversations<any>(payload);
                 const items = response?.data?.items || response?.items || [];
                 const count = response?.totalCount || 0; // خواندن totalCount
@@ -464,10 +485,17 @@ export const useChatState = () => {
         };
 
         fetchConversations();
-    }, [page, selectedPlatform, companyId]);
+    }, [page, selectedPlatform, chatFilterMode, companyId]);
 
     const handleSetSelectedPlatform = (platform: string) => {
         setSelectedPlatform(platform);
+        setPage(1);
+        setConversations([]);
+        setHasMore(true);
+    };
+
+    const handleSetChatFilterMode = (mode: 'all' | 'waiting') => {
+        setChatFilterMode(mode);
         setPage(1);
         setConversations([]);
         setHasMore(true);
@@ -1183,9 +1211,20 @@ export const useChatState = () => {
     const activeChat = conversations.find(c => c.id === activeChatId);
     const currentMessages = activeChatId ? (messages[activeChatId] || []) : [];
 
-    const filteredChats = conversations.filter(c =>
-        (c.contactName?.includes(searchQuery) || c.contactPhoneNumber?.includes(searchQuery))
-    );
+
+    const filteredChats = conversations.filter(c => {
+        const matchesSearch = !searchQuery ||
+            c.contactName?.includes(searchQuery) ||
+            c.contactPhoneNumber?.includes(searchQuery);
+
+        const matchesPlatform = !selectedPlatform ||
+            selectedPlatform === 'all' ||
+            (c.platform && c.platform.toLowerCase() === selectedPlatform.toLowerCase());
+
+        const matchesMode = chatFilterMode === 'all' || c.mode === 1;
+
+        return matchesSearch && matchesPlatform && matchesMode;
+    });
 
 
     return {
@@ -1201,6 +1240,8 @@ export const useChatState = () => {
 
         selectedPlatform,
         setSelectedPlatform: handleSetSelectedPlatform,
+        chatFilterMode,
+        setChatFilterMode: handleSetChatFilterMode,
         page,
         setPage,
         hasMore,

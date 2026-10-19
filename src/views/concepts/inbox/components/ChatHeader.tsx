@@ -1,9 +1,9 @@
-import React, { useRef, useEffect , useState} from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { FaRobot } from 'react-icons/fa';
-import { 
-    HiDotsVertical, 
-    HiOutlineCheckCircle, 
-    HiOutlineIdentification, 
+import {
+    HiDotsVertical,
+    HiOutlineCheckCircle,
+    HiOutlineIdentification,
     HiOutlineSearch,
     HiX,
     HiOutlineChevronUp,
@@ -15,7 +15,7 @@ import Button from '@/components/ui/Button';
 import { Conversation } from '../types';
 
 interface ChatHeaderProps {
-    activeChat: Conversation & { platform?: string; status?: number };
+    activeChat: Conversation & { platform?: string; status?: number; mode?: number };
     avatarLetter: string;
     userName: string;
     isGroup: boolean;
@@ -27,6 +27,8 @@ interface ChatHeaderProps {
     onToggleInfo: () => void;
     onCloseConversation: () => void;
     onEndConversationClick: () => void;
+    isResumingBot?: boolean;
+    onResumeBotClick: () => void;
     onOpenListModal?: () => void;
     onBackToList?: () => void;
     isSearchMode: boolean;
@@ -69,9 +71,11 @@ export const ChatHeader = ({
     onCloseSearch,
     isSearching,
     hasSearched,
-    onBackToList
+    onBackToList,
+    onResumeBotClick,
+    isResumingBot
 }: ChatHeaderProps) => {
-    
+
     const isEnded = activeChat?.status !== 1;
     const searchInputRef = useRef<HTMLInputElement>(null);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -85,24 +89,23 @@ export const ChatHeader = ({
         }
     }, [isSearchMode]);
 
-  return (
+    return (
         // 🌟 کلمه relative به این دیو اصلی اضافه شد تا فرزندان absolute از آن بیرون نزنند
         <div className="px-4 py-2.5 mx-3 mt-3 mb-1 sm:mx-4 sm:mt-4 sm:mb-2 rounded-[28px] sm:rounded-full bg-white/60 dark:bg-[#1c242f]/60 backdrop-blur-xl backdrop-saturate-150 shadow-[0_8px_32px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)] border border-white/50 dark:border-white/10 flex items-center justify-between z-20 sticky top-3 sm:top-4 h-[68px] relative">
-            
+
             {/* ======================================= */}
             {/* ۱. بخش اطلاعات کاربر (پروفایل و دکمه‌ها) */}
             {/* ======================================= */}
-            <div 
-                className={`flex items-center justify-between w-full transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-                    isSearchMode 
+            <div
+                className={`flex items-center justify-between w-full transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isSearchMode
                     ? 'opacity-0 translate-x-20 pointer-events-none absolute' // در حالت سرچ: پرتاب به راست و محو شدن
                     : 'opacity-100 translate-x-0' // در حالت عادی: سر جای خود
-                }`}
+                    }`}
             >
                 <div className="flex items-center gap-2 sm:gap-3">
                     {onBackToList && (
-                        <button 
-                            onClick={onBackToList} 
+                        <button
+                            onClick={onBackToList}
                             className="md:hidden shrink-0 p-1.5 sm:p-2 -mr-1 sm:-mr-2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-full transition-colors flex items-center justify-center"
                         >
                             <HiArrowRight className="text-[22px]" />
@@ -111,10 +114,17 @@ export const ChatHeader = ({
                     <Avatar size={44} shape="circle" className="bg-[#edf2ff] text-[#3b82f6] font-bold text-lg shadow-sm">
                         {avatarLetter}
                     </Avatar>
-                    
+
                     <div className="flex flex-col justify-center">
-                        <h4 className="text-[16px] font-black text-gray-800 dark:text-gray-100 leading-tight">
+                        <h4 className="text-[16px] font-black text-gray-800 dark:text-gray-100 leading-tight flex items-center gap-2">
                             {userName}
+                            {/* 🌟 اضافه شدن نشانگر توقف ربات */}
+                            {activeChat?.mode === 1 && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full animate-pulse">
+                                    <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                                    منتظر اقدام
+                                </span>
+                            )}
                         </h4>
                         <div className="flex items-center gap-1 mt-0.5 text-[11.5px] font-bold text-gray-500 dark:text-gray-400">
                             {isGroup && (
@@ -139,21 +149,24 @@ export const ChatHeader = ({
                                     <FaRobot className="text-sm" /> کنترل توسط ربات
                                 </span>
                             )}
-                            
-                           {isAssignedToMe && (
+
+                            {isAssignedToMe && (
                                 <>
                                     {/* ============================== */}
                                     {/* 🌟 حالت دسکتاپ: دکمه‌های معمولی (در موبایل مخفی می‌شوند) */}
                                     {/* ============================== */}
                                     <div className="hidden md:flex items-center gap-2">
-                                        <Button 
-                                            onClick={onCloseConversation} 
-                                            className="bg-[#f59e0b] hover:bg-[#d97706] text-white border-transparent rounded-full px-4 py-1.5 text-[12px] font-extrabold shadow-sm h-9 transition-colors"
-                                        >
-                                            بازگشت به ربات
-                                        </Button>
-                                        <Button 
-                                            onClick={onEndConversationClick} 
+                                        {activeChat?.mode !== 1 && ( // فقط اگر ربات کنترل را در دست ندارد این دکمه را نشان بده
+                                            <Button
+                                                onClick={onResumeBotClick}
+                                                loading={isResumingBot} // 👈 نمایش لودینگ هنگام درخواست
+                                                className="bg-[#f59e0b] hover:bg-[#d97706] text-white border-transparent rounded-full px-4 py-1.5 text-[12px] font-extrabold shadow-sm h-9 transition-colors"
+                                            >
+                                                بازگشت به ربات
+                                            </Button>
+                                        )}
+                                        <Button
+                                            onClick={onEndConversationClick}
                                             className="bg-[#dc2626] hover:bg-[#b91c1c] text-white border-transparent rounded-full px-4 py-1.5 text-[12px] font-extrabold shadow-sm h-9 flex items-center gap-1.5 transition-colors"
                                         >
                                             <HiOutlineCheckCircle className="text-[16px]" />
@@ -165,7 +178,7 @@ export const ChatHeader = ({
                                     {/* 🌟 حالت موبایل: منوی سه نقطه (در دسکتاپ مخفی می‌شود) */}
                                     {/* ============================== */}
                                     <div className="relative md:hidden">
-                                        <button 
+                                        <button
                                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                                             className="p-1.5 sm:p-2 rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors flex items-center justify-center"
                                         >
@@ -176,15 +189,15 @@ export const ChatHeader = ({
                                         {isMobileMenuOpen && (
                                             <>
                                                 {/* یک بک‌گراند نامرئی برای بستن منو با کلیک بیرون از آن */}
-                                                <div 
+                                                <div
                                                     className="fixed inset-0 z-40"
                                                     onClick={() => setIsMobileMenuOpen(false)}
                                                 ></div>
-                                                
+
                                                 <div className="absolute rtl:left-0 ltr:right-0 top-full mt-2 w-48 bg-white dark:bg-[#1e293b] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-gray-700 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-200">
-                                                    <button 
+                                                    <button
                                                         onClick={() => {
-                                                            onCloseConversation();
+                                                            onResumeBotClick();
                                                             setIsMobileMenuOpen(false);
                                                         }}
                                                         className="w-full text-right px-4 py-2.5 text-[13px] font-bold text-[#f59e0b] hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors flex items-center gap-2"
@@ -192,7 +205,7 @@ export const ChatHeader = ({
                                                         بازگشت به ربات
                                                     </button>
                                                     <div className="w-full h-px bg-gray-100 dark:bg-gray-700 my-0.5"></div>
-                                                    <button 
+                                                    <button
                                                         onClick={() => {
                                                             onEndConversationClick();
                                                             setIsMobileMenuOpen(false);
@@ -213,23 +226,22 @@ export const ChatHeader = ({
 
                     <span className="hidden sm:block w-[1px] h-6 bg-gray-200 dark:bg-gray-700 mx-1"></span>
 
-                    <button 
+                    <button
                         onClick={() => setIsSearchMode(true)}
                         className="p-1.5 sm:p-2 rounded-full text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:text-indigo-400 dark:hover:bg-indigo-900/30 transition-all duration-200 flex items-center justify-center"
                         title="جستجو در پیام‌ها"
                     >
-                        <HiOutlineSearch className="text-[20px] sm:text-[22px]" />            
+                        <HiOutlineSearch className="text-[20px] sm:text-[22px]" />
                     </button>
 
-                    <button 
+                    <button
                         onClick={onToggleInfo}
-                        className={`p-1.5 sm:p-2 rounded-full transition-all duration-200 flex items-center justify-center ${
-                            isInfoOpen 
-                            ? 'text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-900/30' 
+                        className={`p-1.5 sm:p-2 rounded-full transition-all duration-200 flex items-center justify-center ${isInfoOpen
+                            ? 'text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-900/30'
                             : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50/50 dark:hover:text-gray-300 dark:hover:bg-gray-800/50'
-                        }`}
+                            }`}
                     >
-                        <HiOutlineIdentification className="text-[20px] sm:text-[24px]" />            
+                        <HiOutlineIdentification className="text-[20px] sm:text-[24px]" />
                     </button>
                 </div>
             </div>
@@ -237,13 +249,12 @@ export const ChatHeader = ({
             {/* ======================================= */}
             {/* ۲. بخش فرم جستجو */}
             {/* ======================================= */}
-            <form 
-                onSubmit={onSearchSubmit} 
-                className={`absolute inset-0 px-3 sm:px-4 flex items-center w-full h-full transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-                    isSearchMode 
+            <form
+                onSubmit={onSearchSubmit}
+                className={`absolute inset-0 px-3 sm:px-4 flex items-center w-full h-full transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isSearchMode
                     ? 'opacity-100 translate-x-0' // در حالت سرچ: پرواز به مرکز و پر کردن هدر
                     : 'opacity-0 -translate-x-20 pointer-events-none' // در حالت عادی: مخفی شدن در سمت چپ
-                }`}
+                    }`}
             >
                 <HiOutlineSearch className="text-gray-400 text-xl shrink-0" />
                 <input
@@ -254,7 +265,7 @@ export const ChatHeader = ({
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                
+
                 <div className="flex items-center shrink-0">
                     {isSearching ? (
                         <div className="flex items-center gap-1.5 mr-2 sm:mr-3">
@@ -271,9 +282,9 @@ export const ChatHeader = ({
                             </span>
 
                             {searchResultsCount > 3 && (
-                                <button 
-                                    type="button" 
-                                    onClick={onOpenListModal} 
+                                <button
+                                    type="button"
+                                    onClick={onOpenListModal}
                                     className="p-1.5 rounded text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors ml-1"
                                     title="نمایش لیست تمام نتایج"
                                 >
@@ -294,7 +305,7 @@ export const ChatHeader = ({
                         <span className="text-xs font-bold text-red-500 bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded-md mr-2">متاسفانه چیزی پیدا نشد</span>
                     ) : null}
 
-                    <button 
+                    <button
                         type="button"
                         onClick={onCloseSearch}
                         className="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors mr-1 sm:mr-3"
